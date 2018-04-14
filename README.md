@@ -1,4 +1,4 @@
-# To Run Malware Tool
+## To Run Malware Tool
 
 Compile all the Java files to run the analysis, then run Java analysis.
 
