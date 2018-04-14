@@ -1,31 +1,31 @@
-Compile all the Java files to run the analysis
+## To Run Malware Tool
 
-Then run java Analysis
+Compile all the Java files to run the analysis, then run `java Analysis`.
 
-This will present you with 5 options
+This will present you with 5 options:
 
-Exit
+### Exit
 
-	This is how you exit the program.
+This is how you exit the program.
 
-Load graph
+### Load graph
 
-	This allows you to save and load graphs, so that you don't have to re-analyze each time. To load a graph, just give the file name of the graph that was saved.
+This allows you to save and load graphs, so that you don't have to re-analyze each time. To load a graph, just give the file name of the graph that was saved.
 
-Save Graph
-	
-	Will save the graph to a given file name.
+### Save Graph
 
-Add Family
+Will save the graph to a given file name.
 
-	This will add a known malware family to the graph. You must provide the family with a name, so that the graph knows how to classify the family. 
+### Add Family
 
-Add Unknown Sample
+This will add a known malware family to the graph. You must provide the family with a name, so that the graph knows how to classify the family.
 
-	This will add an unknown sample to the file, checking whether it is similar enough to add to a family
+### Add Unknown Sample
 
-Print Graph
-	
-	Prints out the similarity Graph
+This will add an unknown sample to the file, checking whether it is similar enough to add to a family.
 
-*Check out https://drive.google.com/open?id=18FY7mveDTf6xrTvt28Eadh9vqbIpoQnV for examples to test with
+### Print Graph
+
+Prints out the similarity graph.
+
+	Check out https://drive.google.com/open?id=18FY7mveDTf6xrTvt28Eadh9vqbIpoQnV for examples to test with!
