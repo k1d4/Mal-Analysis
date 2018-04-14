@@ -4,45 +4,64 @@ import java.nio.*;
 import java.security.*;
 import java.text.*;
 
+// Object the represents the graph
 class Graph
 {
+	// Minimum amount of similar code to consider it a similar segment
 	static final int MIN_CODE_THRESHOLD = 64;
+
+	// The percentage similarity an edge must be for it to be considered within a family
 	static final double EDGE_SIMILARITY_THRESHOLD = 25;
+
+	// The size of the filter used to hash the malware
 	static final int FILTER_SIZE = (int) Math.pow(2, 28);
+
+	// The window size used for the hash
 	static final int WINDOW_SIZE = 128;
 
+	// Nodes in the graph
 	ArrayList<FamilyNode> nodes;
+
+	// Unknown nodes in the graph
 	ArrayList<SampleNode> unknown;
 
+	// Constructor for the graph
 	Graph()
 	{
 		this.nodes = new ArrayList<FamilyNode>();
 		this.unknown = new ArrayList<SampleNode>();
 	}
 
+	// Add a family to the graph
 	void addFamily(File input, String name) throws Exception
 	{
 		// Get input file list
 		ArrayList<File> samples;
+
+		// Used to check whether a family already exists
 		FamilyNode append = null;
 
+		// Checks if the input is a directory
 		if (input.isDirectory())
 		{
 			samples = new ArrayList<File>(Arrays.asList(input.listFiles()));
 		}
 
+		// Else check if it is a file
 		else if (input.exists())
 		{
 			samples = new ArrayList<File>();
 			samples.add(input);
 		}
 
+		// Else it doesn't exist
 		else
 		{
 			System.out.println("File does not exist");
 			return;
 		}
 
+		// For each FamilyNode in the graph, check if the Family we are adding already exists
 		for(FamilyNode i : nodes)
 		{
 			if (i.name.equals(name))
@@ -52,13 +71,13 @@ class Graph
 			}
 		}
 
+		// If the family does not already exist, create a new one
 		if (append == null)
 		{	
 			append = new FamilyNode(name);
 			append.edges = familyEdges(append);
 			nodes.add(append);
 		}
-
 
 		// Loop over the samples, deobfuscate
 		for (File i : samples)
@@ -93,18 +112,21 @@ class Graph
 		updateFamilyEdges(append);
 	}
 
+	// Add a new binary to the graph
 	void addSample(File input)
 	{
 		// Get input file list
 		ArrayList<File> samples;
 		FamilyNode append = null;
 
+		// Check if the file to be added exists
 		if (input.exists())
 		{
 			samples = new ArrayList<File>();
 			samples.add(input);
 		}
 
+		// The file doesn't exist
 		else
 		{
 			System.out.println("File does not exist");
@@ -113,10 +135,16 @@ class Graph
 
 		try
 		{
+			// Deobfuscate the input file
 			ArrayList<String> code = deobfuscate(input);
+
+			// Create a new node for the binary
 			SampleNode newNode = new SampleNode(code);
+
+			// Check what family the newNode is most similar to
 			append = familyCheck(newNode);
 
+			// If it is similar to a certain family, add it to that family
 			if(append != null)
 			{
 				newNode.edges = sampleEdges(newNode, append);
@@ -125,23 +153,30 @@ class Graph
 				updateFamilyEdges(append);
 			}
 
+			// Else throw it in the unknown bin
 			else 
 			{
 				unknown.add(newNode);
 			}
 		}
+
+		// Catch any errors
 		catch (Exception e)
 		{
 			System.out.println(e);
 		}
 	}
 
+	// Deobfuscating a file
 	static ArrayList<String> deobfuscate(File inFile)
 	{
 		// Create a new process to run objdump
 		Process p;
 
+		// Create a new array to store the code in
 		ArrayList<String> codeOutput = new ArrayList<String>();
+
+		// Add the name of the input file
 		codeOutput.add(inFile.getName());
 
 		try 
@@ -212,6 +247,7 @@ class Graph
 		return codeOutput;
 	}
 
+	// Create a filter for the node
 	static BitSet filter(ArrayList<String> code) throws Exception
 	{
 		// This will contain the n-grams from the doc
@@ -271,6 +307,7 @@ class Graph
 		return filter;
 	}
 
+	// Returns a percentage similarity between two nodes
 	static double filterCompare(BitSet source, BitSet dest)
 	{
 		// Create new Bitset for intersection
@@ -289,6 +326,7 @@ class Graph
 		return (denominator != 0) ? (numerator / denominator * 100.0) : 0;
 	}
 
+	// Returns an ArrayList<String> that contains the similar code between the code
 	static ArrayList<String> sampleCompare(ArrayList<String> source, ArrayList<String> dest) throws Exception
 	{
 		// List of intersections before filtering for threshold
@@ -344,6 +382,7 @@ class Graph
 				}
 			}
 
+			// More code comparison stuff...
 			else
 			{
 				s2 = copy2.get(index);
@@ -384,6 +423,7 @@ class Graph
 			}
 		}
 
+		// If there are any similar segments, add them to the output List
 		if (!copy1.isEmpty() && copy1.size() >= MIN_CODE_THRESHOLD)
 		{
 			String outputString = "";
@@ -394,6 +434,7 @@ class Graph
 		return output;
 	}
 
+	// Read in a saved graph
 	static Graph loadGraph(String graph) throws Exception
 	{
 		FileInputStream fis = new FileInputStream(graph);
@@ -401,6 +442,7 @@ class Graph
         return (Graph) ois.readObject();
 	}
 
+	// Write out the existing graph
 	static String saveGraph(Graph graph) throws Exception
 	{
 		String id = uniqueID();	
@@ -411,6 +453,7 @@ class Graph
         return id;
 	}
 
+	// Load in an existing binary filter representation
 	static BitSet loadFilter(String filter) throws Exception
 	{
 		FileInputStream fis = new FileInputStream(filter);
@@ -418,6 +461,7 @@ class Graph
         return (BitSet) ois.readObject();
 	}
 
+	// Save an existing binary filter representation
 	static String saveFilter(BitSet filter) throws Exception
 	{
 		String id = uniqueID();
@@ -428,6 +472,7 @@ class Graph
         return id;
 	}
 
+	// Save the filter along with its name
 	static String saveFilter(BitSet filter, String id) throws Exception
 	{
 		FileOutputStream fos = new FileOutputStream(id);
@@ -437,6 +482,7 @@ class Graph
         return id;
 	}
 
+	// Load in the saved code for a node
 	static ArrayList<String> loadCode(String code) throws Exception
 	{
 		FileInputStream fis = new FileInputStream(code);
@@ -444,6 +490,7 @@ class Graph
         return (ArrayList<String>) ois.readObject();
 	}
 
+	// Save the code for a node
 	static String saveCode(ArrayList<String> code) throws Exception
 	{
 		String id = uniqueID();
@@ -454,6 +501,7 @@ class Graph
         return id;
 	}
 
+	// Save the code with a given name
 	static String saveCode(ArrayList<String> code, String id) throws Exception
 	{
 		FileOutputStream fos = new FileOutputStream(id);
@@ -463,6 +511,7 @@ class Graph
         return id;
 	}
 
+	// Create sample edges for a family
 	ArrayList<SampleEdge> sampleEdges(SampleNode source, FamilyNode family)
 	{
 		// Create new arraylist
@@ -489,6 +538,7 @@ class Graph
 		return edges;
 	}
 
+	// Create the edges for a family
 	ArrayList<FamilyEdge> familyEdges(FamilyNode source)
 	{
 		// Create new arraylist
@@ -529,24 +579,37 @@ class Graph
 		return null;
 	}
 
+	// Updates the family when new nodes have been added
 	static void updateFamily(FamilyNode family) throws Exception
 	{
+		// The code for the family
 		ArrayList<String> updater = family.getCode();
+
+		// Update the familys aggragate filter
 		BitSet updatefilter = family.getFilter();
 
+		// Iterate over each of the sample nodes
 		for(SampleNode node : family.samples)
 		{
+
+			// Iterate over each of the edges
 			for (SampleEdge b : node.edges)
 			{
+
+				// Check out whether the edge has been updated
 				if (!b.updated)
 				{
+
+					// Get the code from each of the edges
 					for (String z : b.getCode())
 					{
 						updater.add(z);
 					}
 
+					// Set updated to true
 					b.updated = true;
 
+					// The similar code from the edge
 					ArrayList<String> code = b.getCode();
 					ArrayList<String> grams = new ArrayList<String>();
 					ArrayList<String> lines = new ArrayList<String>();
@@ -611,17 +674,23 @@ class Graph
 				}
 			}
 
+			// Write the code to file
 			Graph.saveCode(updater, family.codeID);
+
+			// Write the filter to file
 			Graph.saveFilter(updatefilter, family.filterID);
 		}
 	}
 
+	// Update the family edges
 	static void updateFamilyEdges(FamilyNode family)
 	{
+		// Iterate over each of the family edges
 		for(FamilyEdge i : family.edges)
 		{
 			try
 			{
+				// Check if the source is equal to the family name
 				if(i.source.name.equals(family.name))
 				{
 					i.similarity = filterCompare(family.getFilter(), i.dest.getFilter());
@@ -640,6 +709,7 @@ class Graph
 		}
 	} 
 
+	// Generate a unique ID based upon date and time
 	static String uniqueID() 
 	{
 		SimpleDateFormat gen = new SimpleDateFormat("ddMMyy-hhmmss.SSS");
