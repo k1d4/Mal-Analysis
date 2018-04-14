@@ -1,6 +1,6 @@
 # To Run Malware Tool
 
-Compile all the Java files to run the analysis, then run Java analysis.
+Compile all the Java files to run the analysis, then run `java Analysis`.
 
 This will present you with 5 options:
 
