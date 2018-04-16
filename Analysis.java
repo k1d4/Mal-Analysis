@@ -66,10 +66,10 @@ public class Analysis
 						// Get the saved name file
 						System.out.print("Name of file: ");
 						input = in.next();
-						graph.saveGraph(graph);
+						graph.saveGraph(input, graph);
 					}
 					catch (Exception e)
-					{	
+					{
 						e.printStackTrace();
 					}
 
@@ -128,7 +128,7 @@ public class Analysis
 						{
 							System.out.println("\t" + j.name);
 
-							// Iterate over the sample edges 
+							// Iterate over the sample edges
 							for(SampleEdge k : j.edges)
 							{
 								System.out.println("\t\t" + k.source.name);
@@ -151,4 +151,4 @@ public class Analysis
 	{
 		menu();
 	}
-} 
+}

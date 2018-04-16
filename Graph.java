@@ -5,7 +5,7 @@ import java.security.*;
 import java.text.*;
 
 // Object the represents the graph
-class Graph
+class Graph implements Serializable
 {
 	// Minimum amount of similar code to consider it a similar segment
 	static final int MIN_CODE_THRESHOLD = 64;
@@ -73,7 +73,7 @@ class Graph
 
 		// If the family does not already exist, create a new one
 		if (append == null)
-		{	
+		{
 			append = new FamilyNode(name);
 			append.edges = familyEdges(append);
 			nodes.add(append);
@@ -94,7 +94,7 @@ class Graph
 			{
 				System.out.println(e);
 			}
-			
+
 		}
 
 		// Update family
@@ -107,7 +107,7 @@ class Graph
 		{
 			System.out.println(e);
 		}
-		
+
 		// Update family edges
 		updateFamilyEdges(append);
 	}
@@ -154,7 +154,7 @@ class Graph
 			}
 
 			// Else throw it in the unknown bin
-			else 
+			else
 			{
 				unknown.add(newNode);
 			}
@@ -179,7 +179,7 @@ class Graph
 		// Add the name of the input file
 		codeOutput.add(inFile.getName());
 
-		try 
+		try
 		{
 			// Create output file
 			File output = new File(inFile.getName() + ".TEMP");
@@ -197,7 +197,7 @@ class Graph
 			Scanner asmScan = null;
 
 			// Initialize IO
-			try 
+			try
 			{
 				asmScan = new Scanner(new BufferedReader(new FileReader(output)));
 			}
@@ -209,13 +209,13 @@ class Graph
 			}
 
 			// Normalize input and write to output
-			while(asmScan.hasNext()) 
+			while(asmScan.hasNext())
 			{
 				// Get next line
 				String nextLine = asmScan.nextLine();
 
 				try
-				{	
+				{
 					nextLine = nextLine.substring(0, nextLine.indexOf("\t"));
 				}
 
@@ -236,7 +236,7 @@ class Graph
 			// Delete the original file
 			output.delete();
 		}
-		
+
 		// Print exception if unable to objdump
 		catch(Exception e)
 		{
@@ -275,7 +275,7 @@ class Graph
 		// Store to byte array
 		byte[] bytesOfMessage;
 
-		// Message digests are secure one-way hash functions that take arbitrary-sized 
+		// Message digests are secure one-way hash functions that take arbitrary-sized
 		// data and output a fixed-length hash value
 		MessageDigest md;
 		byte[] thedigest = null;
@@ -344,7 +344,7 @@ class Graph
 		String s2 = null;
 
 		// Index to check if a sequence is found
-		int index = -1; 
+		int index = -1;
 
 		// load line into s1
 		if (source.size() != 0)
@@ -429,7 +429,7 @@ class Graph
 			String outputString = "";
 			for(String i : copy1) outputString += (i + "\n");
 			output.add(outputString);
-		} 
+		}
 
 		return output;
 	}
@@ -443,14 +443,16 @@ class Graph
 	}
 
 	// Write out the existing graph
-	static String saveGraph(Graph graph) throws Exception
+	static String saveGraph(String input, Graph graph) throws Exception
 	{
-		String id = uniqueID();	
-		FileOutputStream fos = new FileOutputStream(id);
+		// String id = uniqueID();
+		// FileOutputStream fos = new FileOutputStream(id);
+		FileOutputStream fos = new FileOutputStream(input);
         ObjectOutputStream oos = new ObjectOutputStream(fos);
         oos.writeObject(graph);
         oos.close();
-        return id;
+        // return id;
+		return input;
 	}
 
 	// Load in an existing binary filter representation
@@ -527,7 +529,7 @@ class Graph
 				dest.edges.add(newEdge);
 				edges.add(newEdge);
 			}
-			
+
 			catch(Exception e)
 			{
 				System.out.println(e);
@@ -552,7 +554,7 @@ class Graph
 				// Create and add new edge to the graph
 				edges.add(new FamilyEdge(source, dest));
 			}
-			
+
 			catch(Exception e)
 			{
 				System.out.println(e);
@@ -643,7 +645,7 @@ class Graph
 					// Store to byte array
 					byte[] bytesOfMessage;
 
-					// Message digests are secure one-way hash functions that take arbitrary-sized 
+					// Message digests are secure one-way hash functions that take arbitrary-sized
 					// data and output a fixed-length hash value
 					MessageDigest md;
 					byte[] thedigest = null;
@@ -695,7 +697,7 @@ class Graph
 				{
 					i.similarity = filterCompare(family.getFilter(), i.dest.getFilter());
 				}
-				
+
 				else
 				{
 					i.similarity = filterCompare(family.getFilter(), i.source.getFilter());
@@ -707,10 +709,10 @@ class Graph
 				System.out.println(e);
 			}
 		}
-	} 
+	}
 
 	// Generate a unique ID based upon date and time
-	static String uniqueID() 
+	static String uniqueID()
 	{
 		SimpleDateFormat gen = new SimpleDateFormat("ddMMyy-hhmmss.SSS");
 		return gen.format(new Date());
