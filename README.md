@@ -1,3 +1,7 @@
+# Malware Analysis
+
+CS 262 Final Project: Chris Morris and Bryan Brzycki
+
 ## To Run Malware Tool
 
 Compile all the Java files to run the analysis, then run `java Analysis`.
