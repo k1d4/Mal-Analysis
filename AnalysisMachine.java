@@ -5,34 +5,28 @@ import java.util.concurrent.*;
 import java.nio.*;
 
 /**
- * Server constants.
+ * AnalysisMachine constants.
  * <p>
- * A Server object consists of
+ * A AnalysisMachine object consists of
  * <ul>
  * <li>(ArrayList) users
  * <li>(Semaphore) lock
  *
  * </ul>
  * <p>
- * The Server class handles the operations from the server side of the chat application.
- * First, the server opens a connection to each client to handle user input. Throughout each client-server session,
- * the server also maintains a heartbeat via Heartbeat, which pings each client repeatedly to check whether
- * the connection is still good. In other words, if the client fails or terminates, the heartbeat allows the server
- * to check whether the client is still reachable, and if not, the server closes the socket.
+ * The AnalysisMachine class handles the operations from the AnalysisMachine side of the chat application.
+ * First, the AnalysisMachine opens a connection to each HeadMachine to handle user input. Throughout each HeadMachine-AnalysisMachine session,
+ * the AnalysisMachine also maintains a heartbeat via Heartbeat, which pings each HeadMachine repeatedly to check whether
+ * the connection is still good. In other words, if the HeadMachine fails or terminates, the heartbeat allows the AnalysisMachine
+ * to check whether the HeadMachine is still reachable, and if not, the AnalysisMachine closes the socket.
  * <p>
- * The server then listens for client requests, and handles them via ClientHandler.
+ * The AnalysisMachine then listens for HeadMachine requests, and handles them via HeadMachineHandler.
  */
-public class Server
+public class AnalysisMachine
 {
-	// Global list of all users
-	static ArrayList<User> users = new ArrayList<User>();
-
-	// Used for locking the user list
-	static Semaphore lock = new Semaphore(1);
-
 	/**
-	 * Server forks a new thread for each client who connects successfully.
-	 * Sets up a ClientHandler to process the requests from each client.
+	 * AnalysisMachine forks a new thread for each HeadMachine who connects successfully.
+	 * Sets up a HeadMachineHandler to process the requests from each HeadMachine.
 	 */
 	public static void main(String [] args)
 	{
@@ -46,15 +40,15 @@ public class Server
 		// Get port number from user
 		int port = Integer.parseInt(args[0]);
 
-		// Create socket port and fork threads for each client
+		// Create socket port and fork threads for each HeadMachine
 		try
 		{
-			ServerSocket server = new ServerSocket(port);
+			AnalysisMachineSocket AnalysisMachine = new AnalysisMachineSocket(port);
 
 			while(true)
 			{
-				Socket client = server.accept();
-				ClientHandler handler = new ClientHandler(client);
+				Socket HeadMachine = AnalysisMachine.accept();
+				HeadMachineHandler handler = new HeadMachineHandler(HeadMachine);
 				handler.start();
 			}
 		}
@@ -68,21 +62,21 @@ public class Server
 }
 
 /**
- * ClientHandler constants.
+ * HeadMachineHandler constants.
  * <p>
- * A ClientHandler takes in a
+ * A HeadMachineHandler takes in a
  * <ul>
  * <li>(Socket) socket
  * <li>(boolean) heartbeat
  * <li>(String) account
  * </ul>
  * <p>
- * ClientListener is the listener established to handle data packets received
- * from the server. Opens an input stream on the socket to receive packet data,
+ * HeadMachineListener is the listener established to handle data packets received
+ * from the AnalysisMachine. Opens an input stream on the socket to receive packet data,
  * unpacks it, and based on the op codes runs the appropriate success of failure
- * method in ClientReceive.
+ * method in HeadMachineReceive.
  */
-class ClientHandler extends Thread
+class HeadMachineHandler extends Thread
 {
 	// Need the new socket
 	Socket socket;
@@ -93,19 +87,19 @@ class ClientHandler extends Thread
 	// Account that is accociated with this thread
 	String account = "";
 
-	// Constructor for ClientHandler
-	ClientHandler(Socket socket)
+	// Constructor for HeadMachineHandler
+	HeadMachineHandler(Socket socket)
 	{
 		this.socket = socket;
 		heartbeat = true;
 	}
 
 	/**
-	 * Run the newly forked thread. Handle data packets received from the client.
+	 * Run the newly forked thread. Handle data packets received from the HeadMachine.
 	 * Opens an input stream on the socket to receive packet data, unpacks it,
 	 * and based on the op codes processes the packet payload using methods in SenderReceive.
-	 * Additionally, check if there's a heartbeat from the client to check that
-	 * the client is still connected.
+	 * Additionally, check if there's a heartbeat from the HeadMachine to check that
+	 * the HeadMachine is still connected.
 	 */
 	public void run()
 	{
@@ -114,7 +108,7 @@ class ClientHandler extends Thread
 		Heartbeat check = new Heartbeat(socket, this);
 		check.start();
 
-		// Keep the connection with the client open
+		// Keep the connection with the HeadMachine open
 		try
 		{
 			synchronized(this)
@@ -151,22 +145,22 @@ class ClientHandler extends Thread
 						// Read payload
 					}
 
-					// Check the header, call server receive based on request
+					// Check the header, call AnalysisMachine receive based on request
 					switch(header[1])
 					{
-						case ChatProtocol.CREATE_ACCOUNT_REQUEST:	ServerReceive.createAccount(socket, data, this);
+						case ChatProtocol.CREATE_ACCOUNT_REQUEST:	AnalysisMachineReceive.createAccount(socket, data, this);
 									break;
-						case ChatProtocol.LOGIN_REQUEST:	ServerReceive.login(socket, data, this);
+						case ChatProtocol.LOGIN_REQUEST:	AnalysisMachineReceive.login(socket, data, this);
 									break;
-						case ChatProtocol.DELETE_ACCOUNT_REQUEST:	ServerReceive.deleteAccount(socket, data);
+						case ChatProtocol.DELETE_ACCOUNT_REQUEST:	AnalysisMachineReceive.deleteAccount(socket, data);
 									break;
-						case ChatProtocol.LIST_ALL_ACCOUNTS_REQUEST:	ServerReceive.listAllAccounts(socket, data);
+						case ChatProtocol.LIST_ALL_ACCOUNTS_REQUEST:	AnalysisMachineReceive.listAllAccounts(socket, data);
 									break;
-						case ChatProtocol.SEND_MESSAGE_REQUEST:	ServerReceive.sendMessage(socket, data);
+						case ChatProtocol.SEND_MESSAGE_REQUEST:	AnalysisMachineReceive.sendMessage(socket, data);
 									break;
-						case ChatProtocol.PULL_ALL_MESSAGES_REQUEST:	ServerReceive.pullAllMessages(socket, data);
+						case ChatProtocol.PULL_ALL_MESSAGES_REQUEST:	AnalysisMachineReceive.pullAllMessages(socket, data);
 									break;
-						case ChatProtocol.END_SESSION_REQUEST:	ServerReceive.endSession(socket, data);
+						case ChatProtocol.END_SESSION_REQUEST:	AnalysisMachineReceive.endSession(socket, data);
 									break;
 					}
 				}
@@ -185,25 +179,25 @@ class ClientHandler extends Thread
  * Heartbeat constants.
  * <p>
  * <ul>
- * <li>(ClientHandler) handle
+ * <li>(HeadMachineHandler) handle
  * <li>(Socket) socket
  * </ul>
  * <p>
  *
  * <p>
- * Throughout each client-server session,
- * the server also maintains a heartbeat via Heartbeat, which pings each client repeatedly to check whether
- * the connection is still good. In other words, if the client fails or terminates, the heartbeat allows the server
- * to check whether the client is still reachable, and if not, the server closes the socket.
+ * Throughout each HeadMachine-AnalysisMachine session,
+ * the AnalysisMachine also maintains a heartbeat via Heartbeat, which pings each HeadMachine repeatedly to check whether
+ * the connection is still good. In other words, if the HeadMachine fails or terminates, the heartbeat allows the AnalysisMachine
+ * to check whether the HeadMachine is still reachable, and if not, the AnalysisMachine closes the socket.
  */
 class Heartbeat extends Thread
 {
 	// Need the new socket
 	Socket socket;
-	ClientHandler handle;
+	HeadMachineHandler handle;
 
 	// Constructor for Heartbeat
-	Heartbeat(Socket socket, ClientHandler handle)
+	Heartbeat(Socket socket, HeadMachineHandler handle)
 	{
 		this.socket = socket;
 		this.handle = handle;
@@ -211,27 +205,27 @@ class Heartbeat extends Thread
 
 	/**
 	 * Run the newly forked thread.
-	 * Heartbeat is sent to the client, then the server waits for a period of 3 seconds.
-	 * If the server does not receive a heartbeat from the client in that period,
-	 * the server ends the client session and closes the socket.
+	 * Heartbeat is sent to the HeadMachine, then the AnalysisMachine waits for a period of 3 seconds.
+	 * If the AnalysisMachine does not receive a heartbeat from the HeadMachine in that period,
+	 * the AnalysisMachine ends the HeadMachine session and closes the socket.
 	 */
 	public void run()
 	{
-		// Send heartbeat to client
+		// Send heartbeat to HeadMachine
 		try
 		{
 			while(true)
 			{
 				// Send the heartbeat
-				ServerSend.heartbeat(socket);
+				AnalysisMachineSend.heartbeat(socket);
 
-				// Sleep and wait for heartbeat response from client
+				// Sleep and wait for heartbeat response from HeadMachine
 				Thread.sleep(3000);
 
 				if(!handle.heartbeat)
 				{
-					// Tell the client thread to quit
-					ServerReceive.endSession(socket, handle.account.getBytes("UTF-8"));
+					// Tell the HeadMachine thread to quit
+					AnalysisMachineReceive.endSession(socket, handle.account.getBytes("UTF-8"));
 					break;
 				}
 
@@ -265,8 +259,8 @@ class Heartbeat extends Thread
  *
  * <p>
  * Defines a User object, which contains necessary information that should
- * be stored on the server side. Provides a convenient way to store the user
- * information, so that it can be retrieved by various server operations.
+ * be stored on the AnalysisMachine side. Provides a convenient way to store the user
+ * information, so that it can be retrieved by various AnalysisMachine operations.
  */
 class User
 {
@@ -312,7 +306,7 @@ class User
  */
 class Message
 {
-	// Date the server received the message
+	// Date the AnalysisMachine received the message
 	String date;
 
 	// Sender of the message
