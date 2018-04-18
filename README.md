@@ -4,7 +4,7 @@ CS 262 Final Project: Chris Morris and Bryan Brzycki
 
 ## Distributed System Structure
 
-![alt text](Malware-Analysis-Distributed-Block-Diagram.pdf "Logo Title Text 1")
+![alt text](Malware-Analysis-Distributed-Block-Diagram.png "Distributed System Structure")
 
 ## To Run Malware Tool
 
