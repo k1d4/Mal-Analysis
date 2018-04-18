@@ -2,6 +2,10 @@
 
 CS 262 Final Project: Chris Morris and Bryan Brzycki
 
+## Distributed System Structure
+
+![alt text](Malware-Analysis-Distributed-Block-Diagram.png "Distributed System Structure")
+
 ## To Run Malware Tool
 
 Compile all the Java files to run the analysis, then run `java Analysis`.
