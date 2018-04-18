@@ -4,7 +4,7 @@ CS 262 Final Project: Chris Morris and Bryan Brzycki
 
 ## Distributed System Structure
 
-<embed src="https://drive.google.com/viewerng/viewer?embedded=true&url=Malware-Analysis-Distributed-Block-Diagram.pdf" width="500" height="375">
+![alt text](Malware-Analysis-Distributed-Block-Diagram.pdf "Logo Title Text 1")
 
 ## To Run Malware Tool
 
