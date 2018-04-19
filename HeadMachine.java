@@ -31,9 +31,10 @@ public class HeadMachine
 			listener.start();
 
 			// Continually loop to send input (listener will handle responses)
-			while(true)
+			int select = 0;
+			do
 			{
-				getInput(socket);
+				select = getInput(socket);
 
 				// Wait on the child
 				synchronized(listener)
@@ -41,6 +42,7 @@ public class HeadMachine
 					listener.wait();
 				}
 			}
+			while(select != 0);
 		}
 
 		// Print exception if one occurred
@@ -51,7 +53,7 @@ public class HeadMachine
 	}
 
     // Handle input from user and send tasks to analysis machines
-	public static void getInput(Socket socket)
+	public static int getInput(Socket socket)
 	{
         // Selection from the user
 		int select = 0;
@@ -68,7 +70,7 @@ public class HeadMachine
 		// The graph that is created to represent our ecosystem.
 		Graph graph = new Graph();
 
-		do
+		scan: while(true)
 		{
 			// Ask the user for input
 			System.out.println("Select an option:");
@@ -80,7 +82,20 @@ public class HeadMachine
 			System.out.println("\t5. Print Graph");
 
 			// Get which option the user wants
-			select = in.nextInt();
+			try
+			{
+				select = in.nextInt();
+			}
+			catch(Exception e)
+			{
+				System.out.println("");
+				System.out.println("***** Error! *****");
+				System.out.print("* ");
+				System.out.println("Please input a valid option...");
+				System.out.println("******************");
+				in.nextLine();
+				continue;
+			}
 
 			// Switch on the users selection
 			switch(select)
@@ -101,7 +116,7 @@ public class HeadMachine
 						e.printStackTrace();
 					}
 
-					break;
+					break scan;
 
 				// Save the graph to a file
 				case 2:
@@ -117,9 +132,10 @@ public class HeadMachine
 						e.printStackTrace();
 					}
 
-					break;
+					break scan;
 
 				// Get a malware family from the user
+				// distributed function
 				case 3:
 					// Get the malware family directory
 					System.out.print("Input Directory: ");
@@ -138,14 +154,15 @@ public class HeadMachine
 					{
 						System.out.println(e);
 					}
-					break;
+					break scan;
 
 				// Add unknown files
+				// distributed function
 				case 4:
 					System.out.print("Input Directory: ");
 					input = in.next();
 					graph.addSample(new File(input));
-					break;
+					break scan;
 
 				// Print out the graph
 				case 5:
@@ -183,11 +200,11 @@ public class HeadMachine
 						}
 
 						System.out.print("\n\n\n\n-----------------------------------------------");
+						break scan;
 					}
 			}
-
-		// As long as the input isn't 0
-		} while(select != 0);
+		}
+		return select;
 	}
 }
 
