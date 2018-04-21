@@ -66,8 +66,8 @@ class AnalysisHandler extends Thread
         		while(true)
 				{
 					// Create an ObjectInputStream and read an object from it
-					objectStream = new ObjectInputStream(socket.getInputStream());
-					Object data = objectStream.readObject();
+					inputStream = new ObjectInputStream(socket.getInputStream());
+					Object data = inputStream.readObject();
 
 					// Check if the data is a string
 					if(data instanceof String)
@@ -83,7 +83,7 @@ class AnalysisHandler extends Thread
 					}
 
 					// If it is a file, then analyze it
-					else if (data instanceof File)
+					else if (data instanceof byte[])
 					{
 						AnalysisMachineReceive.fileAnalysis(data);
 					}

@@ -12,17 +12,32 @@ public class AnalysisMachineSend
 		try
 		{
 			// Get output stream from socket
-			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
-			// Create header
-			byte[] header = new byte[ChatProtocol.HEADER_SIZE];
-			header[0] = ChatProtocol.VERSION;
-			header[1] = ChatProtocol.HEARTBEAT;
-
-			// Write to socket
-			out.write(header);
+			// Send back the heartbeat
+			outputStream.write("HEARTBEAT");
 		}
 
+		// Something Failed
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
+	}
+
+	// Send a heartbeat back to the HeadMachine
+	public static void error(Socket socket)
+	{
+		try
+		{
+			// Get output stream from socket
+			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+
+			// Send back the heartbeat
+			outputStream.write("ERRORMESSAGE");
+		}
+
+		// Something Failed
 		catch(Exception e)
 		{
 			System.out.println(e);
