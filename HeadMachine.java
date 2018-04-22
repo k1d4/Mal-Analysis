@@ -150,6 +150,84 @@ public class HeadMachine
 				{
 					// graph.addFamily(new File(input), family);
 
+					// Get input file list
+					ArrayList<File> samples;
+
+					// Used to check whether a family already exists
+					FamilyNode append = null;
+
+					// Checks if the input is a directory
+					if (input.isDirectory())
+					{
+						samples = new ArrayList<File>(Arrays.asList(input.listFiles()));
+					}
+
+					// Else check if it is a file
+					else if (input.exists())
+					{
+						samples = new ArrayList<File>();
+						samples.add(input);
+					}
+
+					// Else it doesn't exist
+					else
+					{
+						System.out.println("File does not exist");
+						return;
+					}
+
+					// For each FamilyNode in the graph, check if the Family we are adding already exists
+					for(FamilyNode i : graph.nodes)
+					{
+						if (i.name.equals(name))
+						{
+							append = i;
+							break;
+						}
+					}
+
+					// If the family does not already exist, create a new one
+					if (append == null)
+					{
+						append = new FamilyNode(name);
+						append.edges = familyEdges(append);
+						graph.nodes.add(append);
+					}
+
+					//
+					// ALLOCATE MACHINES TO HANDLE SAMPLES
+					// SEND REQUESTS TO DEOBFUSCATE ETC
+					//
+					// Loop over the samples, deobfuscate
+					// for (File i : samples)
+					// {
+					// 	try
+					// 	{
+					// 		ArrayList<String> code = deobfuscate(i);
+					// 		SampleNode newNode = new SampleNode(code);
+					// 		newNode.edges = sampleEdges(newNode, append);
+					// 		append.samples.add(newNode);
+					// 	}
+					//
+					// 	catch(Exception e)
+					// 	{
+					// 		System.out.println(e);
+					// 	}
+					//
+					// }
+
+					// Update family
+					try
+					{
+						graph.updateFamily(append);
+					}
+
+					catch(Exception e)
+					{
+						System.out.println(e);
+					}
+
+					graph.updateFamilyEdges(append);
 				}
 				catch (Exception e)
 				{
@@ -162,7 +240,64 @@ public class HeadMachine
 			case 4:
 				System.out.print("Input Directory: ");
 				input = in.next();
-				graph.addSample(new File(input));
+
+				// graph.addSample(new File(input));
+				// Get input file list
+				ArrayList<File> samples;
+				FamilyNode append = null;
+
+				// Check if the file to be added exists
+				if (input.exists())
+				{
+					samples = new ArrayList<File>();
+					samples.add(input);
+				}
+
+				// The file doesn't exist
+				else
+				{
+					System.out.println("File does not exist");
+					return;
+				}
+
+
+				//
+				// ALLOCATE MACHINES TO HANDLE SAMPLES
+				// SEND REQUESTS TO DEOBFUSCATE ETC
+				//
+				// try
+				// {
+				// 	// Deobfuscate the input file
+				// 	ArrayList<String> code = deobfuscate(input);
+				// 
+				// 	// Create a new node for the binary
+				// 	SampleNode newNode = new SampleNode(code);
+				//
+				// 	// Check what family the newNode is most similar to
+				// 	append = familyCheck(newNode);
+				//
+				// 	// If it is similar to a certain family, add it to that family
+				// 	if(append != null)
+				// 	{
+				// 		newNode.edges = sampleEdges(newNode, append);
+				// 		append.samples.add(newNode);
+				// 		updateFamily(append);
+				// 		updateFamilyEdges(append);
+				// 	}
+				//
+				// 	// Else throw it in the unknown bin
+				// 	else
+				// 	{
+				// 		unknown.add(newNode);
+				// 	}
+				// }
+				//
+				// // Catch any errors
+				// catch (Exception e)
+				// {
+				// 	System.out.println(e);
+				// }
+
 				break scan;
 
 			// Print out the graph
