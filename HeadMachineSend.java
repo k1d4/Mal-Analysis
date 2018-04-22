@@ -6,7 +6,7 @@ import java.util.regex.*;
 
 public abstract class HeadMachineSend
 {
-	
+
 	/**
 	 * Sends a heartbeat to the server, in order for the server and HeadMachine to ensure
 	 * they are both connected to each other. If the heartbeat is not returned,
@@ -17,18 +17,33 @@ public abstract class HeadMachineSend
 		try
 		{
 			// Get output stream from socket
-			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
-			// Create header
-			byte[] header = new byte[ChatProtocol.HEADER_SIZE];
-			header[0] = ChatProtocol.VERSION;
-			header[1] = ChatProtocol.HEARTBEAT;
-
-			// Write to socket
-			out.write(header);
+			// Send back the heartbeat
+			outputStream.write("HEARTBEAT");
 		}
 
-		// Print exception
+		// Something Failed
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
+	}
+
+	// Send a heartbeat back to the AnalysisMachine
+	// We don't necessarily need this, but maybe we do
+	public static void error(Socket socket)
+	{
+		try
+		{
+			// Get output stream from socket
+			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+
+			// Send back the heartbeat
+			outputStream.write("ERRORMESSAGE");
+		}
+
+		// Something Failed
 		catch(Exception e)
 		{
 			System.out.println(e);
