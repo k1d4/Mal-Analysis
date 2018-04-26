@@ -16,7 +16,39 @@ import java.util.concurrent.TimeUnit;
  */
 public class HeadMachineReceive
 {
-	
+	public static void addNode(Socket conn, BinaryNode node)
+	{
+		// Free socket for other binaries
+		HeadMachine.availableSockets.add(conn);
+
+		try
+		{
+			if (HeadMachine.binaryType.equals("unknown"))
+			{
+				// Check what family the newNode is most similar to
+				HeadMachine.append = Graph.familyCheck(node);
+			}
+
+			if(append != null)
+			{
+				newNode.edges = sampleEdges(node, HeadMachine.append);
+				HeadMachine.append.samples.add(node);
+				HeadMachine.graph.updateFamily(HeadMachine.append);
+				HeadMachine.graph.updateFamilyEdges(HeadMachine.append);
+			}
+			else
+			{
+				HeadMachine.graph.unknown.add(node);
+			}
+		}
+
+		// Print exception
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
+	}
+
 	public static void generalFailure(Socket conn, byte [] buffer)
 	{
 		System.out.println("");
