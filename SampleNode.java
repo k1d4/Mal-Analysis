@@ -18,11 +18,11 @@ class SampleNode implements Serializable
 	ArrayList<SampleEdge> edges;
 
 	// Node Constructor for each binary
-	SampleNode(ArrayList<String> code) throws Exception
+	SampleNode(ArrayList<String> code, BitSet filter) throws Exception
 	{
 		this.name = code.get(0);
 		this.codeID = Graph.saveCode(code);
-		this.filterID = Graph.saveFilter(Graph.filter(code));
+		this.filterID = Graph.saveFilter(filter);
 		this.edges = new ArrayList<SampleEdge>();
 	}
 

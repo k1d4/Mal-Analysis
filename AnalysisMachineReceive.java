@@ -8,13 +8,20 @@ import java.text.SimpleDateFormat;
 public class AnalysisMachineReceive
 {
 	// Take in the file to analyze, run it through RetDec
-	public static void fileAnalysis(byte [] data)
+	public static void fileAnalysis(Socket socket, byte [] data)
 	{
+		path = Graph.uniqueID();
 		// Convert the byte array into a file object, write it to memory
-		Files.write(f.toPath(), (byte []) data);
+		//Files.write(f.toPath(), (byte []) data);
+		Files.write(path, data);
+		File binary = new File(path);
 
 		// Run the file through RetDec
-		decompile()
+		ArrayList<String> decompiledCode = decompile(binary);
+
+		BinaryNode newNode = new BinaryNode(decompiledCode);
+
+		AnalysisMachineSend.sendBinaryNode(socket, newNode);
 
 		// THIS WILL SEND BACK TO THE HEAD A BINARYNODE
 		// OBJECT, WITHOUT ANY EDGES

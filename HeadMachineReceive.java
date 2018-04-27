@@ -21,24 +21,26 @@ public class HeadMachineReceive
 		// Free socket for other binaries
 		HeadMachine.availableSockets.add(conn);
 
+		SampleNode newNode = new SampleNode(node.code, node.filter);
+
 		try
 		{
 			if (HeadMachine.binaryType.equals("unknown"))
 			{
 				// Check what family the newNode is most similar to
-				HeadMachine.append = Graph.familyCheck(node);
+				HeadMachine.append = Graph.familyCheck(newNode);
 			}
 
 			if(append != null)
 			{
-				newNode.edges = sampleEdges(node, HeadMachine.append);
-				HeadMachine.append.samples.add(node);
+				newNode.edges = sampleEdges(newNode, HeadMachine.append);
+				HeadMachine.append.samples.add(newNode);
 				HeadMachine.graph.updateFamily(HeadMachine.append);
 				HeadMachine.graph.updateFamilyEdges(HeadMachine.append);
 			}
 			else
 			{
-				HeadMachine.graph.unknown.add(node);
+				HeadMachine.graph.unknown.add(newNode);
 			}
 		}
 

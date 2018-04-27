@@ -376,7 +376,7 @@ class HeadMachineListener extends Thread
         		while(true)
 				{
 					// Create an ObjectInputStream and read an object from it
-					inputStream = new ObjectInputStream(socket.getInputStream());
+					inputStream = new ObjectInputStream(this.socket.getInputStream());
 					Object data = inputStream.readObject();
 
 					// Check if the data is a string
