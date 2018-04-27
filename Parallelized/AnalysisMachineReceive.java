@@ -1,4 +1,6 @@
 import java.net.Socket;
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
 import java.util.concurrent.*;
@@ -10,7 +12,7 @@ public class AnalysisMachineReceive
 	// Take in the file to analyze, run it through RetDec
 	public static void fileAnalysis(Socket socket, byte [] data)
 	{
-		path = Graph.uniqueID();
+		String path = Graph.uniqueID();
 		// Convert the byte array into a file object, write it to memory
 		//Files.write(f.toPath(), (byte []) data);
 		Files.write(path, data);

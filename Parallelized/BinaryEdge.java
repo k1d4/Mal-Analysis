@@ -18,7 +18,7 @@ class BinaryEdge implements Serializable
 
 	// Constructor for the sample edge
 	// NEED TO MAKE SURE THIS OPERATION ISN'T OCCURING TWICE
-	SampleEdge(SampleNode source, SampleNode dest) throws Exception
+	BinaryEdge(SampleNode source, SampleNode dest) throws Exception
 	{
 		this.dest = dest;
 		this.updated = false;

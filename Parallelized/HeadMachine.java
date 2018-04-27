@@ -12,16 +12,16 @@ public class HeadMachine
 	static ArrayList<Socket> availableSockets = new ArrayList<Socket>();
 
 	// The graph that is created to represent our ecosystem.
-	Graph graph = new Graph();
+	static Graph graph = new Graph();
 
 	// Get input file list
-	ArrayList<File> samples;
+	static ArrayList<File> samples;
 
 	// Used to check whether a family already exists
-	FamilyNode append = null;
+	static FamilyNode append = null;
 
 	// Check if adding family or unknown sample
-	String binaryType = null;
+	static String binaryType = null;
 
 	public static void main(String [] args)
 	{
@@ -55,7 +55,7 @@ public class HeadMachine
 			// Continually loop to send input (listener will handle responses)
 			int select = -1;
 
-			scan: while(select != 0)
+			while(select != 0)
 			{
 				// Ask the user for input
 				System.out.println("Select an option:");
@@ -65,7 +65,7 @@ public class HeadMachine
 				System.out.println("\t3. Add family to graph");
 				System.out.println("\t4. Add unknown samples");
 				System.out.println("\t5. Print graph");
-				System.out.println("\t6. Add analysis machine")
+				System.out.println("\t6. Add analysis machine");
 
 				// Get which option the user wants
 				try
@@ -84,7 +84,7 @@ public class HeadMachine
 				}
 
 				// do heavy lifting
-				parseInput(select, socket);
+				parseInput(select);
 
 				// Wait on the child
 				synchronized(listener)
@@ -102,11 +102,12 @@ public class HeadMachine
 	}
 
     // Handle input from user and send tasks to analysis machines
-	public static void parseInput(int select, Socket socket)
+	public static void parseInput(int select)
 	{
 		// Scanner used to get input from the user
 		Scanner in = new Scanner(System.in);
-		Strint input = "";
+		String input = "";
+		File inputFile;
 
 		// Switch on the users selection
 		switch(select)
@@ -119,15 +120,13 @@ public class HeadMachine
 					// Get the saved file name from the user
 					System.out.print("Name of saved graph: ");
 					input = in.next();
-					this.graph = Graph.loadGraph(input);
+					graph = Graph.loadGraph(input);
 				}
 
 				catch (Exception e)
 				{
 					e.printStackTrace();
 				}
-
-				break scan;
 
 			// Save the graph to a file
 			case 2:
@@ -136,29 +135,28 @@ public class HeadMachine
 					// Get the saved name file
 					System.out.print("Name of file: ");
 					input = in.next();
-					this.graph.saveGraph(input, this.graph);
+					graph.saveGraph(input, graph);
 				}
 				catch (Exception e)
 				{
 					e.printStackTrace();
 				}
 
-				break scan;
-
 			// Get a malware family from the user
 			// distributed function
 			case 3:
-				this.binaryType = "family";
+				binaryType = "family";
 
 				// Get the malware family directory
 				System.out.print("Input Directory: ");
 				input = in.next();
+				inputFile = new File(input);
 
 				// Name to be associated with the family
 				System.out.print("Family: ");
 				String family = in.next();
 
-				this.append = null;
+				append = null;
 
 				// Add the family to the graph
 				try
@@ -166,16 +164,16 @@ public class HeadMachine
 					// graph.addFamily(new File(input), family);
 
 					// Checks if the input is a directory
-					if (input.isDirectory())
+					if (inputFile.isDirectory())
 					{
-						this.samples = new ArrayList<File>(Arrays.asList(input.listFiles()));
+						samples = new ArrayList<File>(Arrays.asList(inputFile.listFiles()));
 					}
 
 					// Else check if it is a file
-					else if (input.exists())
+					else if (inputFile.exists())
 					{
-						this.samples = new ArrayList<File>();
-						this.samples.add(input);
+						samples = new ArrayList<File>();
+						samples.add(inputFile);
 					}
 
 					// Else it doesn't exist
@@ -186,34 +184,34 @@ public class HeadMachine
 					}
 
 					// For each FamilyNode in the graph, check if the Family we are adding already exists
-					for(FamilyNode i : this.graph.nodes)
+					for(FamilyNode i : graph.nodes)
 					{
 						if (i.name.equals(family))
 						{
-							this.append = i;
+							append = i;
 							break;
 						}
 					}
 
 					// If the family does not already exist, create a new one
-					if (this.append == null)
+					if (append == null)
 					{
-						this.append = new FamilyNode(family);
-						this.append.edges = familyEdges(this.append);
-						this.graph.nodes.add(this.append);
+						append = new FamilyNode(family);
+						append.edges = Graph.familyEdges(append);
+						graph.nodes.add(append);
 					}
 
 					// ALLOCATE MACHINES TO HANDLE SAMPLES
 					// SEND REQUESTS TO DEOBFUSCATE ETC
-					while (this.samples.size() != 0)
+					while (samples.size() != 0)
 					{
-						if (this.availableSockets.size() != 0)
+						if (availableSockets.size() != 0)
 						{
-							send_socket = this.availableSockets.get(0);
-							send_sample = this.samples.get(0);
+							Socket send_socket = availableSockets.get(0);
+							File send_sample = samples.get(0);
 							HeadMachineSend.sendBinary(send_socket, send_sample);
-							this.availableSockets.remove(send_socket);
-							this.samples.remove(send_sample);
+							availableSockets.remove(send_socket);
+							samples.remove(send_sample);
 						}
 					}
 				}
@@ -221,25 +219,25 @@ public class HeadMachine
 				{
 					System.out.println(e);
 				}
-				break scan;
 
 			// Add unknown files
 			// distributed function
 			case 4:
-				this.binaryType = "unknown";
+				binaryType = "unknown";
 
 				System.out.print("Input Binary Path: ");
 				input = in.next();
+				inputFile = new File(input);
 
-				this.append = null;
+				append = null;
 
 				try
 				{
 					// Check if the file to be added exists
-					if (input.exists())
+					if (inputFile.exists())
 					{
-						this.samples = new ArrayList<File>();
-						this.samples.add(input);
+						samples = new ArrayList<File>();
+						samples.add(inputFile);
 					}
 
 					// The file doesn't exist
@@ -249,15 +247,15 @@ public class HeadMachine
 						return;
 					}
 
-					while (this.samples.size() != 0)
+					while (samples.size() != 0)
 					{
-						if (this.availableSockets.size() != 0)
+						if (availableSockets.size() != 0)
 						{
-							send_socket = this.availableSockets.get(0);
-							send_sample = this.samples.get(0);
+							Socket send_socket = availableSockets.get(0);
+							File send_sample = samples.get(0);
 							HeadMachineSend.sendBinary(send_socket, send_sample);
-							this.availableSockets.remove(send_socket);
-							this.samples.remove(send_sample);
+							availableSockets.remove(send_socket);
+							samples.remove(send_sample);
 						}
 					}
 				}
@@ -265,13 +263,12 @@ public class HeadMachine
 				{
 					System.out.println(e);
 				}
-				break scan;
 
 			// Print out the graph
 			case 5:
 
 				// Iterate over each family node
-				for(FamilyNode i : this.graph.nodes)
+				for(FamilyNode i : graph.nodes)
 				{
 					System.out.println(i.name);
 
@@ -303,15 +300,14 @@ public class HeadMachine
 					}
 
 					System.out.print("\n\n\n\n-----------------------------------------------");
-					break scan;
 				}
 			case 6:
 			// Presumably sets up another server
 			// Get the host and port
 				System.out.print("Input Host: ");
-				host = in.next();
+				String host = in.next();
 				System.out.print("Input Port: ");
-				port = Integer.parseInt(in.next());
+				int port = Integer.parseInt(in.next());
 
 				try
 				{
@@ -329,7 +325,6 @@ public class HeadMachine
 				{
 					System.out.println(e);
 				}
-
 		}
 	}
 }
@@ -355,7 +350,7 @@ class HeadMachineListener extends Thread
 	// Constructor HeadMachineListener
 	HeadMachineListener(Socket socket)
 	{
-		this.socket = socket;
+		socket = socket;
 	}
 
 	/**
@@ -376,31 +371,31 @@ class HeadMachineListener extends Thread
         		while(true)
 				{
 					// Create an ObjectInputStream and read an object from it
-					inputStream = new ObjectInputStream(this.socket.getInputStream());
+					ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 					Object data = inputStream.readObject();
 
 					// Check if the data is a string
 					if(data instanceof String)
 					{
-						switch(data)
+						switch((String) data)
 						{
 							// Just send a heartbeat back
-							case "HEARTBEAT": HeadMachineSend.heartbeat();
+							case "HEARTBEAT": HeadMachineSend.heartbeat(socket);
 
 							// Send an error, unknown string
-							default: HeadMachineSend.error();
+							default: HeadMachineSend.error(socket);
 						}
 					}
 
 					else if (data instanceof BinaryNode)
 					{
-						HeadMachineReceive.addNode(this.socket, data);
+						HeadMachineReceive.addNode(socket, (BinaryNode) data);
 					}
 
 					// If it's any other object, send back an error
 					else
 					{
-						HeadMachineSend.error();
+						HeadMachineSend.error(socket);
 					}
 				}
       		}

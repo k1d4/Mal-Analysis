@@ -27,7 +27,7 @@ class BinaryNode implements Serializable
 		this.name = code.get(0);
 		this.code = code;
 		this.codeID = Graph.saveCode(this.code);
-		this.filter = Graph.filter(this.code)
+		this.filter = Graph.filter(this.code);
 		this.filterID = Graph.saveFilter(this.filter);
 		this.edges = new ArrayList<BinaryEdge>();
 	}

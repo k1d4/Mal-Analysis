@@ -20,231 +20,16 @@ class Graph implements Serializable
 	static final int WINDOW_SIZE = 128;
 
 	// Nodes in the graph
-	ArrayList<FamilyNode> nodes;
+	static ArrayList<FamilyNode> nodes;
 
 	// Unknown nodes in the graph
-	ArrayList<SampleNode> unknown;
+	static ArrayList<SampleNode> unknown;
 
 	// Constructor for the graph
 	Graph()
 	{
 		this.nodes = new ArrayList<FamilyNode>();
 		this.unknown = new ArrayList<SampleNode>();
-	}
-
-	// Add a family to the graph
-	void addFamily(File input, String name) throws Exception
-	{
-		// Get input file list
-		ArrayList<File> samples;
-
-		// Used to check whether a family already exists
-		FamilyNode append = null;
-
-		// Checks if the input is a directory
-		if (input.isDirectory())
-		{
-			samples = new ArrayList<File>(Arrays.asList(input.listFiles()));
-		}
-
-		// Else check if it is a file
-		else if (input.exists())
-		{
-			samples = new ArrayList<File>();
-			samples.add(input);
-		}
-
-		// Else it doesn't exist
-		else
-		{
-			System.out.println("File does not exist");
-			return;
-		}
-
-		// For each FamilyNode in the graph, check if the Family we are adding already exists
-		for(FamilyNode i : nodes)
-		{
-			if (i.name.equals(name))
-			{
-				append = i;
-				break;
-			}
-		}
-
-		// If the family does not already exist, create a new one
-		if (append == null)
-		{
-			append = new FamilyNode(name);
-			append.edges = familyEdges(append);
-			nodes.add(append);
-		}
-
-		// Loop over the samples, deobfuscate
-		for (File i : samples)
-		{
-			try
-			{
-				ArrayList<String> code = deobfuscate(i);
-				SampleNode newNode = new SampleNode(code);
-				newNode.edges = sampleEdges(newNode, append);
-				append.samples.add(newNode);
-			}
-
-			catch(Exception e)
-			{
-				System.out.println(e);
-			}
-
-		}
-
-		// Update family
-		try
-		{
-			updateFamily(append);
-		}
-
-		catch(Exception e)
-		{
-			System.out.println(e);
-		}
-
-		// Update family edges
-		updateFamilyEdges(append);
-	}
-
-	// Add a new binary to the graph
-	void addSample(File input)
-	{
-		// Get input file list
-		ArrayList<File> samples;
-		FamilyNode append = null;
-
-		// Check if the file to be added exists
-		if (input.exists())
-		{
-			samples = new ArrayList<File>();
-			samples.add(input);
-		}
-
-		// The file doesn't exist
-		else
-		{
-			System.out.println("File does not exist");
-			return;
-		}
-
-		try
-		{
-			// Deobfuscate the input file
-			ArrayList<String> code = deobfuscate(input);
-
-			// Create a new node for the binary
-			SampleNode newNode = new SampleNode(code);
-
-			// Check what family the newNode is most similar to
-			append = familyCheck(newNode);
-
-			// If it is similar to a certain family, add it to that family
-			if(append != null)
-			{
-				newNode.edges = sampleEdges(newNode, append);
-				append.samples.add(newNode);
-				updateFamily(append);
-				updateFamilyEdges(append);
-			}
-
-			// Else throw it in the unknown bin
-			else
-			{
-				unknown.add(newNode);
-			}
-		}
-
-		// Catch any errors
-		catch (Exception e)
-		{
-			System.out.println(e);
-		}
-	}
-
-	// Deobfuscating a file
-	static ArrayList<String> deobfuscate(File inFile)
-	{
-		// Create a new process to run objdump
-		Process p;
-
-		// Create a new array to store the code in
-		ArrayList<String> codeOutput = new ArrayList<String>();
-
-		// Add the name of the input file
-		codeOutput.add(inFile.getName());
-
-		try
-		{
-			// Create output file
-			File output = new File(inFile.getName() + ".TEMP");
-
-			// Call objdump to get asm
-			ProcessBuilder builder = new ProcessBuilder("/bin/sh", "-c", "objdump " + "-d " + "--no-show-raw-insn " + inFile + " | perl -p -e 's/^\\s+(\\S+):\\t//;'");
-			builder.redirectOutput(output);
-
-			// Start process
-			p = builder.start();
-
-			// Wait until thread has terminated
-        	p.waitFor();
-
-			Scanner asmScan = null;
-
-			// Initialize IO
-			try
-			{
-				asmScan = new Scanner(new BufferedReader(new FileReader(output)));
-			}
-
-			// Some IO exception occurred, close files
-			catch(Exception e)
-			{
-				System.out.println(e);
-			}
-
-			// Normalize input and write to output
-			while(asmScan.hasNext())
-			{
-				// Get next line
-				String nextLine = asmScan.nextLine();
-
-				try
-				{
-					nextLine = nextLine.substring(0, nextLine.indexOf("\t"));
-				}
-
-				catch (Exception e)
-				{
-					// Ignore
-				}
-
-				// Print to output file
-				if(nextLine.length() != 0)
-				{
-					codeOutput.add(nextLine);
-				}
-			}
-
-			asmScan.close();
-
-			// Delete the original file
-			output.delete();
-		}
-
-		// Print exception if unable to objdump
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-
-		// Return the created file
-		return codeOutput;
 	}
 
 	// Create a filter for the node
@@ -514,7 +299,7 @@ class Graph implements Serializable
 	}
 
 	// Create sample edges for a family
-	ArrayList<SampleEdge> sampleEdges(SampleNode source, FamilyNode family)
+	static ArrayList<SampleEdge> sampleEdges(SampleNode source, FamilyNode family)
 	{
 		// Create new arraylist
 		ArrayList<SampleEdge> edges = new ArrayList<SampleEdge>();
@@ -541,7 +326,7 @@ class Graph implements Serializable
 	}
 
 	// Create the edges for a family
-	ArrayList<FamilyEdge> familyEdges(FamilyNode source)
+	static ArrayList<FamilyEdge> familyEdges(FamilyNode source)
 	{
 		// Create new arraylist
 		ArrayList<FamilyEdge> edges = new ArrayList<FamilyEdge>();
@@ -566,7 +351,7 @@ class Graph implements Serializable
 	}
 
 	// Do a comparision against each composite from each family, check the threshold
-	FamilyNode familyCheck(SampleNode node) throws Exception
+	static FamilyNode familyCheck(SampleNode node) throws Exception
 	{
 		for(FamilyNode i : nodes)
 		{

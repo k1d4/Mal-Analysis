@@ -66,7 +66,7 @@ class AnalysisHandler extends Thread
         		while(true)
 				{
 					// Create an ObjectInputStream and read an object from it
-					inputStream = new ObjectInputStream(this.socket.getInputStream());
+					ObjectInputStream inputStream = new ObjectInputStream(this.socket.getInputStream());
 					Object data = inputStream.readObject();
 
 					// Check if the data is a string
@@ -75,10 +75,10 @@ class AnalysisHandler extends Thread
 						switch(data)
 						{
 							// Just send a heartbeat back
-							case "HEARTBEAT": AnalysisMachineSend.heartbeat();
+							case "HEARTBEAT": AnalysisMachineSend.heartbeat(this.socket);
 
 							// Send an error, unknown string
-							default: AnalysisMachineSend.error();
+							default: AnalysisMachineSend.error(this.socket);
 						}
 					}
 
@@ -91,7 +91,7 @@ class AnalysisHandler extends Thread
 					// If it's any other object, send back an error
 					else
 					{
-						AnalysisMachineSend.error();
+						AnalysisMachineSend.error(this.socket);
 					}
 				}
       		}

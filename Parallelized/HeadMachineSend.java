@@ -1,5 +1,6 @@
 import java.net.Socket;
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -11,7 +12,7 @@ public abstract class HeadMachineSend
 	{
 		try
 		{
-			byte[] data = Files.readAllBytes(sample);
+			byte[] data = Files.readAllBytes(sample.toPath());
 
 			// Get output stream from socket
 			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
@@ -40,7 +41,7 @@ public abstract class HeadMachineSend
 			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
 			// Send back the heartbeat
-			outputStream.write("HEARTBEAT");
+			outputStream.writeBytes("HEARTBEAT");
 		}
 
 		// Something Failed
@@ -60,7 +61,7 @@ public abstract class HeadMachineSend
 			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
 			// Send back the heartbeat
-			outputStream.write("ERRORMESSAGE");
+			outputStream.writeBytes("ERRORMESSAGE");
 		}
 
 		// Something Failed

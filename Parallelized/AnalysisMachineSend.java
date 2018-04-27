@@ -33,7 +33,7 @@ public class AnalysisMachineSend
 			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
 			// Send back the heartbeat
-			outputStream.write("HEARTBEAT");
+			outputStream.writeBytes("HEARTBEAT");
 		}
 
 		// Something Failed
@@ -52,7 +52,7 @@ public class AnalysisMachineSend
 			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
 			// Send back the heartbeat
-			outputStream.write("ERRORMESSAGE");
+			outputStream.writeBytes("ERRORMESSAGE");
 		}
 
 		// Something Failed

@@ -31,9 +31,9 @@ public class HeadMachineReceive
 				HeadMachine.append = Graph.familyCheck(newNode);
 			}
 
-			if(append != null)
+			if(HeadMachine.append != null)
 			{
-				newNode.edges = sampleEdges(newNode, HeadMachine.append);
+				newNode.edges = Graph.sampleEdges(newNode, HeadMachine.append);
 				HeadMachine.append.samples.add(newNode);
 				HeadMachine.graph.updateFamily(HeadMachine.append);
 				HeadMachine.graph.updateFamilyEdges(HeadMachine.append);
