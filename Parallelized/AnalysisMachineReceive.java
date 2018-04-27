@@ -15,8 +15,9 @@ public class AnalysisMachineReceive
 		String path = Graph.uniqueID();
 		// Convert the byte array into a file object, write it to memory
 		//Files.write(f.toPath(), (byte []) data);
-		Files.write(path, data);
 		File binary = new File(path);
+
+		Files.write(binary.toPath(), data);
 
 		// Run the file through RetDec
 		ArrayList<String> decompiledCode = decompile(binary);
@@ -37,10 +38,10 @@ public class AnalysisMachineReceive
 		Process p;
 
 		// Create a new array to store the code in
-		ArrayList<String> output = new ArrayList<String>();
+		ArrayList<String> codeOutput = new ArrayList<String>();
 
 		// Add the name of the input file
-		output.add(inFile.getName());
+		codeOutput.add(inFile.getName());
 
 		try
 		{

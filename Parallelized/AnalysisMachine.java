@@ -72,7 +72,7 @@ class AnalysisHandler extends Thread
 					// Check if the data is a string
 					if(data instanceof String)
 					{
-						switch(data)
+						switch((String) data)
 						{
 							// Just send a heartbeat back
 							case "HEARTBEAT": AnalysisMachineSend.heartbeat(this.socket);
@@ -85,7 +85,7 @@ class AnalysisHandler extends Thread
 					// If it is a file, then analyze it
 					else if (data instanceof byte[])
 					{
-						AnalysisMachineReceive.fileAnalysis(this.socket, data);
+						AnalysisMachineReceive.fileAnalysis(this.socket, (byte[]) data);
 					}
 
 					// If it's any other object, send back an error
