@@ -2,7 +2,4 @@
 *.class
 
 BinaryExamples*
-<<<<<<< HEAD
-
-=======
->>>>>>> 556b4ad5627eb4dc5cadc3267afef37ee564b3a1
+*/*.class
