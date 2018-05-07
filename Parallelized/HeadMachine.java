@@ -4,11 +4,13 @@ import java.util.*;
 import java.nio.*;
 import java.util.concurrent.TimeUnit;
 
-
+// Head machine, where graph analysis and construction occurs
 public class HeadMachine
 {
 	// Global list of all analysis machines
 	static ArrayList<Socket> onlineSockets = new ArrayList<Socket>();
+
+	// List of machines that are currently available
 	static ArrayList<Socket> availableSockets = new ArrayList<Socket>();
 
 	// The graph that is created to represent our ecosystem.
@@ -38,16 +40,19 @@ public class HeadMachine
 
 		try
 		{
-			// We need to open N connections with all servers.. ideally leave it open
-			// Open a socket with the host
+			// We need to open N connections with all servers... Ideally leave it open
+			// Open a socket with the analysis machine
 			Socket socket = new Socket(InetAddress.getByName(host), port);
+
+			// Add the analysis machine to the online sockets and available list
 			onlineSockets.add(socket);
 			availableSockets.add(socket);
 
-			// Fork the listener
+			// Fork a listener for that socket
 			HeadMachineListener listener = new HeadMachineListener(socket);
-			listener.start();
 
+			// Start the listener
+			listener.start();
 
 			// Scanner used to get input from the user
 			Scanner in = new Scanner(System.in);
@@ -72,6 +77,7 @@ public class HeadMachine
 				{
 					select = in.nextInt();
 				}
+
 				catch(Exception e)
 				{
 					System.out.println("");
@@ -83,7 +89,7 @@ public class HeadMachine
 					continue;
 				}
 
-				// do heavy lifting
+				// Do heavy lifting
 				parseInput(select);
 
 				// Wait on the child

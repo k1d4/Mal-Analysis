@@ -12,23 +12,33 @@ public class AnalysisMachineReceive
 	// Take in the file to analyze, run it through RetDec
 	public static void fileAnalysis(Socket socket, byte [] data)
 	{
+		// String path for the file
 		String path = Graph.uniqueID();
-		// Convert the byte array into a file object, write it to memory
-		//Files.write(f.toPath(), (byte []) data);
+
+		// Create a file at that path
 		File binary = new File(path);
 
-		Files.write(binary.toPath(), data);
+		BinaryNode newNode = null;
 
-		// Run the file through RetDec
-		ArrayList<String> decompiledCode = decompile(binary);
+		try
+		{
+			// Write the file at that path
+			Files.write(binary.toPath(), data);
 
-		BinaryNode newNode = new BinaryNode(decompiledCode);
+			// Run the file through RetDec
+			ArrayList<String> decompiledCode = decompile(binary);
 
+			// Create a binary node based upon that new file
+			newNode = new BinaryNode(decompiledCode);
+		}
+
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
+
+		// Send the node back to the Head Machine
 		AnalysisMachineSend.sendBinaryNode(socket, newNode);
-
-		// THIS WILL SEND BACK TO THE HEAD A BINARYNODE
-		// OBJECT, WITHOUT ANY EDGES
-
 	}
 
 	// Uses RetDec to deobfuscate a file
@@ -45,14 +55,14 @@ public class AnalysisMachineReceive
 
 		try
 		{
-			// Create output file
-			File output = new File(inFile.getName() + ".TEMP");
+			// Create log file !!TESTING!!
+			File log = new File("Log.txt");
 
-			// Call objdump to get asm
-			ProcessBuilder builder = new ProcessBuilder("retdec", "something", inFile);
+			// Call retdec-decompiler.sh on the file
+			ProcessBuilder builder = new ProcessBuilder("retdec-decompiler.sh", inFile.toString());
 
-			// Should have this maybe redirected into a log?
-			builder.redirectOutput(output);
+			// Output to the log file !!TESTING!!
+			builder.redirectOutput(log);
 
 			// Start process
 			p = builder.start();
@@ -60,12 +70,13 @@ public class AnalysisMachineReceive
 			// Wait until thread has terminated
         	p.waitFor();
 
+        	// Read the output file into an arraylist
 			Scanner asmScan = null;
 
 			// Initialize IO
 			try
 			{
-				asmScan = new Scanner(new BufferedReader(new FileReader(output)));
+				asmScan = new Scanner(new BufferedReader(new FileReader(inFile + ".c")));
 			}
 
 			// Some IO exception occurred, close files
@@ -75,20 +86,11 @@ public class AnalysisMachineReceive
 			}
 
 			// Normalize input and write to output
+			//!!NEED TO WORK ON MORE NORMALIZATION!!
 			while(asmScan.hasNext())
 			{
 				// Get next line
 				String nextLine = asmScan.nextLine();
-
-				try
-				{
-					nextLine = nextLine.substring(0, nextLine.indexOf("\t"));
-				}
-
-				catch (Exception e)
-				{
-					// Ignore
-				}
 
 				// Print to output file
 				if(nextLine.length() != 0)
@@ -97,10 +99,8 @@ public class AnalysisMachineReceive
 				}
 			}
 
+			// Close the scanning on the retdec output
 			asmScan.close();
-
-			// Delete the original file
-			output.delete();
 		}
 
 		// Print exception if unable to objdump

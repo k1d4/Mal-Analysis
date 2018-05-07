@@ -17,7 +17,7 @@ class BinaryEdge implements Serializable
 	boolean updated;
 
 	// Constructor for the sample edge
-	// NEED TO MAKE SURE THIS OPERATION ISN'T OCCURING TWICE
+	// !!NEED TO MAKE SURE THIS OPERATION ISN'T OCCURING TWICE!!
 	BinaryEdge(SampleNode source, SampleNode dest) throws Exception
 	{
 		this.dest = dest;

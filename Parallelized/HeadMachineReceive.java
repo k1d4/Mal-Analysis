@@ -21,10 +21,10 @@ public class HeadMachineReceive
 		// Free socket for other binaries
 		HeadMachine.availableSockets.add(conn);
 
-		SampleNode newNode = new SampleNode(node.code, node.filter);
-
 		try
 		{
+			SampleNode newNode = new SampleNode(node.code, node.filter);
+			
 			if (HeadMachine.binaryType.equals("unknown"))
 			{
 				// Check what family the newNode is most similar to

@@ -13,7 +13,7 @@ public class AnalysisMachineSend
 			// Get output stream from socket
 			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
-			// Send back the heartbeat
+			// Send back the binary node
 			outputStream.writeObject(node);
 		}
 

@@ -7,6 +7,7 @@ import java.text.*;
 // Object the represents the graph
 class Graph implements Serializable
 {
+	//!!ALL THESE METRICS NEED TO BE TESTED!!
 	// Minimum amount of similar code to consider it a similar segment
 	static final int MIN_CODE_THRESHOLD = 64;
 
