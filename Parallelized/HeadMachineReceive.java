@@ -22,6 +22,11 @@ public class HeadMachineReceive
 		// Free socket for other binaries
 		HeadMachine.availableSockets.add(conn);
 
+		for(String x : node.code)
+		{
+			System.out.println(x);
+		}
+
 		try
 		{
 			SampleNode newNode = new SampleNode(node.code, node.filter);
@@ -43,7 +48,6 @@ public class HeadMachineReceive
 			{
 				HeadMachine.graph.unknown.add(newNode);
 			}
-			System.out.println("SUCCESS");
 		}
 
 		// Print exception

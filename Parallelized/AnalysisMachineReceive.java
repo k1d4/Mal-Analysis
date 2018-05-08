@@ -55,13 +55,13 @@ public class AnalysisMachineReceive
 
 		try
 		{
-			// Create log file !!TESTING!!
+			// Create log file
 			File log = new File("Log.txt");
 
 			// Call retdec-decompiler.sh on the file
-			ProcessBuilder builder = new ProcessBuilder("retdec-decompiler.sh", inFile.toString());
+			ProcessBuilder builder = new ProcessBuilder("retdec-decompiler.sh", "-l", "py", inFile.toString());
 
-			// Output to the log file !!TESTING!!
+			// Output to the log file
 			builder.redirectOutput(log);
 
 			// Start process
@@ -71,12 +71,12 @@ public class AnalysisMachineReceive
         	p.waitFor();
 
         	// Read the output file into an arraylist
-			Scanner asmScan = null;
+			Scanner scan = null;
 
 			// Initialize IO
 			try
 			{
-				asmScan = new Scanner(new BufferedReader(new FileReader(inFile + ".c")));
+				scan = new Scanner(new BufferedReader(new FileReader(inFile.toString() + ".py")));
 			}
 
 			// Some IO exception occurred, close files
@@ -85,21 +85,73 @@ public class AnalysisMachineReceive
 				System.out.println(e);
 			}
 
+			while(scan.hasNext())
+			{
+				String nextLine = scan.nextLine();
+
+				if(nextLine.contains("- Functions -"))
+				{
+					break;
+				}
+			}
+
 			// Normalize input and write to output
-			while(asmScan.hasNext())
+			while(scan.hasNext())
 			{
 				// Get next line
-				String nextLine = asmScan.nextLine();
+				String nextLine = scan.nextLine();
 
-				// Print to output file
-				if(nextLine.length() != 0)
+				if(nextLine.contains("- Dynamically Linked Functions -"))
 				{
-					codeOutput.add(nextLine);
+					break;
+				}
+
+				// Remove comments
+				String [] string_parsing = nextLine.split("#");
+
+				// If there are comments, remove the comment part
+				if(string_parsing.length != 0)
+				{
+					String outString = string_parsing[0];
+
+					// Don't add the line if it is just the definition of a global
+					if(outString.contains("global"))
+					{
+						continue;
+					}
+
+					// If there is a part that is not a comment
+					if(outString.length() != 0)
+					{
+						// Generalize Functions
+						outString = outString.replaceAll("[a-zA-Z_0-9]+\\(", "func(");
+
+						// Generalize Globals 
+						outString = outString.replaceAll("g[0-9]+", "g");
+
+						// Generalize Arguments 
+						outString = outString.replaceAll("a[0-9]+", "a");
+
+						// Generalize Struct Vars 
+						outString = outString.replaceAll("e[0-9]+", "e");
+
+						// Generalize Local Vars 
+						outString = outString.replaceAll("v[0-9]+", "v");
+
+						// Remove whitespace
+						outString = outString.replaceAll("\\s", "");
+
+						if(outString.length() != 0)
+						{
+							// Normalization occurs here
+							codeOutput.add(outString);
+						}
+					}
 				}
 			}
 
 			// Close the scanning on the retdec output
-			asmScan.close();
+			scan.close();
 		}
 
 		// Print exception if unable to objdump
