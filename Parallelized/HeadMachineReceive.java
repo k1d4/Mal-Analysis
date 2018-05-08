@@ -27,34 +27,44 @@ public class HeadMachineReceive
 			System.out.println(x);
 		}
 
-		try
+		HeadMachine.testing.add(node);
+
+		for(BinaryNode x : HeadMachine.testing)
 		{
-			SampleNode newNode = new SampleNode(node.code, node.filter);
+			for(BinaryNode y : HeadMachine.testing)
+			{
+				System.out.println(x.name + "-" + y.name + "-" + Graph.filterCompare(x.filter, y.filter));
+			}
+		}
+
+		// try
+		// {
+		// 	SampleNode newNode = new SampleNode(node.code, node.filter);
 			
-			if (HeadMachine.binaryType.equals("unknown"))
-			{
-				// Check what family the newNode is most similar to
-				HeadMachine.append = Graph.familyCheck(newNode);
-			}
+		// 	if (HeadMachine.binaryType.equals("unknown"))
+		// 	{
+		// 		// Check what family the newNode is most similar to
+		// 		HeadMachine.append = Graph.familyCheck(newNode);
+		// 	}
 
-			if(HeadMachine.append != null)
-			{
-				newNode.edges = Graph.sampleEdges(newNode, HeadMachine.append);
-				HeadMachine.append.samples.add(newNode);
-				HeadMachine.graph.updateFamily(HeadMachine.append);
-				HeadMachine.graph.updateFamilyEdges(HeadMachine.append);
-			}
-			else
-			{
-				HeadMachine.graph.unknown.add(newNode);
-			}
-		}
+		// 	if(HeadMachine.append != null)
+		// 	{
+		// 		newNode.edges = Graph.sampleEdges(newNode, HeadMachine.append);
+		// 		HeadMachine.append.samples.add(newNode);
+		// 		HeadMachine.graph.updateFamily(HeadMachine.append);
+		// 		HeadMachine.graph.updateFamilyEdges(HeadMachine.append);
+		// 	}
+		// 	else
+		// 	{
+		// 		HeadMachine.graph.unknown.add(newNode);
+		// 	}
+		// }
 
-		// Print exception
-		catch(Exception e)
-		{
-			System.out.println(e);
-		}
+		// // Print exception
+		// catch(Exception e)
+		// {
+		// 	System.out.println(e);
+		// }
 	}
 
 	public static void generalFailure(ObjectOutputStream conn, byte [] buffer)

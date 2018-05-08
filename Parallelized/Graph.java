@@ -7,7 +7,6 @@ import java.text.*;
 // Object the represents the graph
 class Graph implements Serializable
 {
-	//!!ALL THESE METRICS NEED TO BE TESTED!!
 	// Minimum amount of similar code to consider it a similar segment
 	static final int MIN_CODE_THRESHOLD = 64;
 
@@ -15,22 +14,22 @@ class Graph implements Serializable
 	static final double EDGE_SIMILARITY_THRESHOLD = 25;
 
 	// The size of the filter used to hash the malware
-	static final int FILTER_SIZE = (int) Math.pow(2, 28);
+	static final int FILTER_SIZE = (int) Math.pow(2, 24);
 
 	// The window size used for the hash
-	static final int WINDOW_SIZE = 128;
+	static final int WINDOW_SIZE = 64;
 
 	// Nodes in the graph
 	static ArrayList<FamilyNode> nodes;
 
 	// Unknown nodes in the graph
-	static ArrayList<SampleNode> unknown;
+	static ArrayList<BinaryNode> unknown;
 
 	// Constructor for the graph
 	Graph()
 	{
 		this.nodes = new ArrayList<FamilyNode>();
-		this.unknown = new ArrayList<SampleNode>();
+		this.unknown = new ArrayList<BinaryNode>();
 	}
 
 	// Create a filter for the node
@@ -83,8 +82,8 @@ class Graph implements Serializable
 			// Wraps a byte array into a buffer.
 			int index = ByteBuffer.wrap(trunc).getInt();
 
-			// Truncate to 28 bit value
-			index = index & 0x0FFFFFFF;
+			// Truncate to 24 bit value
+			index = index & 0x00FFFFFF;
 
 			// Set index in filter
 			filter.set(index);
@@ -113,112 +112,311 @@ class Graph implements Serializable
 	}
 
 	// Returns an ArrayList<String> that contains the similar code between the code
-	static ArrayList<String> sampleCompare(ArrayList<String> source, ArrayList<String> dest) throws Exception
-	{
-		// List of intersections before filtering for threshold
-		ArrayList<ArrayList<String>> copies = new ArrayList<ArrayList<String>>();
+	// !!NEED TO REVIEW THIS AGAIN!!
+	// static ArrayList<String> sampleCompare(ArrayList<String> source, ArrayList<String> dest) throws Exception
+	// {
+	// 	// List of intersections before filtering for threshold
+	// 	ArrayList<ArrayList<String>> copies = new ArrayList<ArrayList<String>>();
 
-		// List of intersections after filtering for threshold
-		ArrayList<String> output = new ArrayList<String>();
+	// 	// List of intersections after filtering for threshold
+	// 	ArrayList<String> output = new ArrayList<String>();
 
-		// String that will be checked
-		ArrayList<String> copy1 = new ArrayList<String>();
-		ArrayList<String> copy2 = dest;
+	// 	// String that will be checked
+	// 	ArrayList<String> copy1 = new ArrayList<String>();
+	// 	ArrayList<String> copy2 = dest;
 
-		// Strings to be compared
-		String s1 = null;
-		String s2 = null;
+	// 	// Strings to be compared
+	// 	String s1 = null;
+	// 	String s2 = null;
 
-		// Index to check if a sequence is found
-		int index = -1;
+	// 	// Index to check if a sequence is found
+	// 	int index = -1;
 
-		// load line into s1
-		if (source.size() != 0)
-		s1 = source.get(0);
+	// 	// load line into s1
+	// 	if (source.size() != 0)
+	// 	s1 = source.get(0);
 
-		// while(fileScan1.hasNext())
-		for(String instruction : source)
-		{
-			// Make sure copy2 is not empty
-			if(index >= copy2.size())
-			{
-				if (!copy1.isEmpty() && copy1.size() >= MIN_CODE_THRESHOLD)
-				{
-					String outputString = "";
-					for(String i : copy1) outputString += (i + "\n");
-					output.add(outputString);
-				}
-				break;
-			}
+	// 	// while(fileScan1.hasNext())
+	// 	for(String instruction : source)
+	// 	{
+	// 		// Make sure copy2 is not empty
+	// 		if(index >= copy2.size())
+	// 		{
+	// 			if (!copy1.isEmpty() && copy1.size() >= MIN_CODE_THRESHOLD)
+	// 			{
+	// 				String outputString = "";
+	// 				for(String i : copy1) outputString += (i + "\n");
+	// 				output.add(outputString);
+	// 			}
+	// 			break;
+	// 		}
 
-			// No previous match has been found
-			if(index == -1)
-			{
-				for(int k = 0; k < copy2.size(); k++)
-				{
-					s2 = copy2.get(k);
+	// 		// No previous match has been found
+	// 		if(index == -1)
+	// 		{
+	// 			for(int k = 0; k < copy2.size(); k++)
+	// 			{
+	// 				s2 = copy2.get(k);
 
-					if(s2.equals(s1))
-					{
-						copy1.add(s1);
-						index = k + 1;
-						break;
-					}
-					index = -1;
-				}
-			}
+	// 				if(s2.equals(s1))
+	// 				{
+	// 					copy1.add(s1);
+	// 					index = k + 1;
+	// 					break;
+	// 				}
+	// 				index = -1;
+	// 			}
+	// 		}
 
-			// More code comparison stuff...
-			else
-			{
-				s2 = copy2.get(index);
+	// 		// More code comparison stuff...
+	// 		else
+	// 		{
+	// 			s2 = copy2.get(index);
 
-				if(s2.equals(s1))
-				{
-					copy1.add(s1);
-					index++;
-				}
+	// 			if(s2.equals(s1))
+	// 			{
+	// 				copy1.add(s1);
+	// 				index++;
+	// 			}
 
-				else
-				{
-					if(copy1.size() >= MIN_CODE_THRESHOLD)
-					{
-						String outputString = "";
-						for(String i : copy1) outputString += (i + "\n");
-						output.add(outputString);
-					}
+	// 			else
+	// 			{
+	// 				if(copy1.size() >= MIN_CODE_THRESHOLD)
+	// 				{
+	// 					String outputString = "";
+	// 					for(String i : copy1) outputString += (i + "\n");
+	// 					output.add(outputString);
+	// 				}
 
-					index = -1;
-					copy1.clear();
-					continue;
-				}
-			}
+	// 				index = -1;
+	// 				copy1.clear();
+	// 				continue;
+	// 			}
+	// 		}
 
-			s1 = instruction;
-		}
+	// 		s1 = instruction;
+	// 	}
 
-		// Check last line
-		for(int k = 0; k < copy2.size(); k++)
-		{
-			s2 = copy2.get(k);
+	// 	// Check last line
+	// 	for(int k = 0; k < copy2.size(); k++)
+	// 	{
+	// 		s2 = copy2.get(k);
 
-			if(s2.equals(s1))
-			{
-				copy1.add(s1);
-				break;
-			}
-		}
+	// 		if(s2.equals(s1))
+	// 		{
+	// 			copy1.add(s1);
+	// 			break;
+	// 		}
+	// 	}
 
-		// If there are any similar segments, add them to the output List
-		if (!copy1.isEmpty() && copy1.size() >= MIN_CODE_THRESHOLD)
-		{
-			String outputString = "";
-			for(String i : copy1) outputString += (i + "\n");
-			output.add(outputString);
-		}
+	// 	// If there are any similar segments, add them to the output List
+	// 	if (!copy1.isEmpty() && copy1.size() >= MIN_CODE_THRESHOLD)
+	// 	{
+	// 		String outputString = "";
+	// 		for(String i : copy1) outputString += (i + "\n");
+	// 		output.add(outputString);
+	// 	}
 
-		return output;
-	}
+	// 	return output;
+	// }
+
+	// // Create sample edges for a family
+	// static ArrayList<BinaryEdge> binaryEdges(BinaryNode source, FamilyNode family)
+	// {
+	// 	// Create new arraylist
+	// 	ArrayList<BinaryEdge> edges = new ArrayList<BinaryEdge>();
+
+	// 	// Iterate over the nodes already in the graph
+	// 	for(BinaryNode dest : family.samples)
+	// 	{
+	// 		try
+	// 		{
+	// 			// Create and add new edge to the graph
+	// 			BinaryEdge newEdge = new BinaryEdge(source, dest);
+	// 			dest.edges.add(newEdge);
+	// 			edges.add(newEdge);
+	// 		}
+
+	// 		catch(Exception e)
+	// 		{
+	// 			System.out.println(e);
+	// 		}
+	// 	}
+
+	// 	// Return the list of edges
+	// 	return edges;
+	// }
+
+	// // Create the edges for a family
+	// static ArrayList<FamilyEdge> familyEdges(FamilyNode source)
+	// {
+	// 	// Create new arraylist
+	// 	ArrayList<FamilyEdge> edges = new ArrayList<FamilyEdge>();
+
+	// 	// Iterate over the nodes already in the graph
+	// 	for(FamilyNode dest : nodes)
+	// 	{
+	// 		try
+	// 		{
+	// 			// Create and add new edge to the graph
+	// 			edges.add(new FamilyEdge(source, dest));
+	// 		}
+
+	// 		catch(Exception e)
+	// 		{
+	// 			System.out.println(e);
+	// 		}
+	// 	}
+
+	// 	// Return the list of edges
+	// 	return edges;
+	// }
+
+	// // Do a comparision against each composite from each family, check the threshold
+	// static FamilyNode familyCheck(BinayNode node) throws Exception
+	// {
+	// 	for(FamilyNode i : nodes)
+	// 	{
+	// 		if(filterCompare(node.getFilter(), i.getFilter()) >= 25.0)
+	// 		{
+	// 			System.out.println(node.name + " is likely part of " + i.name);
+	// 			return i;
+	// 		}
+	// 	}
+
+	// 	System.out.println("Family not found for " + node.name);
+	// 	return null;
+	// }
+
+	// // Updates the family when new nodes have been added
+	// static void updateFamily(FamilyNode family) throws Exception
+	// {
+	// 	// The code for the family
+	// 	ArrayList<String> updater = family.getCode();
+
+	// 	// Update the familys aggragate filter
+	// 	BitSet updatefilter = family.getFilter();
+
+	// 	// Iterate over each of the sample nodes
+	// 	for(BinaryNode node : family.samples)
+	// 	{
+
+	// 		// Iterate over each of the edges
+	// 		for (BinaryEdge b : node.edges)
+	// 		{
+
+	// 			// Check out whether the edge has been updated
+	// 			if (!b.updated)
+	// 			{
+
+	// 				// Get the code from each of the edges
+	// 				for (String z : b.getCode())
+	// 				{
+	// 					updater.add(z);
+	// 				}
+
+	// 				// Set updated to true
+	// 				b.updated = true;
+
+	// 				// The similar code from the edge
+	// 				ArrayList<String> code = b.getCode();
+	// 				ArrayList<String> grams = new ArrayList<String>();
+	// 				ArrayList<String> lines = new ArrayList<String>();
+
+	// 				// Array to contain the strings as we scan
+	// 				for(String i : code)
+	// 				{
+	// 					String [] split = i.split("\n");
+	// 					for (String x : split)
+	// 					{
+	// 						lines.add(x);
+	// 					}
+	// 				}
+
+	// 				// Create and store the n-gram strings
+	// 				for(int i = 0; i < lines.size(); i++)
+	// 				{
+	// 					// Check if we are at the end of the file
+	// 					if(i + WINDOW_SIZE >= lines.size()) break;
+
+	// 					// Initialize n-gram as empty string
+	// 					String gram = "";
+
+	// 					// Create grams
+	// 					for(int k = 0; k < WINDOW_SIZE; k++) gram += lines.get(i + k);
+
+	// 					// Add gram to list
+	// 					grams.add(gram);
+	// 				}
+
+	// 				// Store to byte array
+	// 				byte[] bytesOfMessage;
+
+	// 				// Message digests are secure one-way hash functions that take arbitrary-sized
+	// 				// data and output a fixed-length hash value
+	// 				MessageDigest md;
+	// 				byte[] thedigest = null;
+
+	// 				for(String i : grams)
+	// 				{
+	// 					// Encodes this String into a sequence of bytes
+	// 					bytesOfMessage = i.getBytes("UTF-8");
+
+	// 					// MessageDigest object that implements MD5
+	// 					md = MessageDigest.getInstance("MD5");
+
+	// 					// Hashes the byte array
+	// 					thedigest = md.digest(bytesOfMessage);
+
+	// 					// Copies last 4 bytes of computation, as MD5 is 16 bytes
+	// 					byte [] trunc = Arrays.copyOfRange(thedigest, 11, 15);
+
+	// 					// Wraps a byte array into a buffer.
+	// 					int index = ByteBuffer.wrap(trunc).getInt();
+
+	// 					// Truncate to 28 bit value
+	// 					index = index & 0x0FFFFFFF;
+
+	// 					// Set index in filter
+	// 					updatefilter.set(index);
+	// 				}
+	// 			}
+	// 		}
+
+	// 		// Write the code to file
+	// 		Graph.saveCode(updater, family.codeID);
+
+	// 		// Write the filter to file
+	// 		Graph.saveFilter(updatefilter, family.filterID);
+	// 	}
+	// }
+
+	// // Update the family edges
+	// static void updateFamilyEdges(FamilyNode family)
+	// {
+	// 	// Iterate over each of the family edges
+	// 	for(FamilyEdge i : family.edges)
+	// 	{
+	// 		try
+	// 		{
+	// 			// Check if the source is equal to the family name
+	// 			if(i.source.name.equals(family.name))
+	// 			{
+	// 				i.similarity = filterCompare(family.getFilter(), i.dest.getFilter());
+	// 			}
+
+	// 			else
+	// 			{
+	// 				i.similarity = filterCompare(family.getFilter(), i.source.getFilter());
+	// 			}
+	// 		}
+
+	// 		catch(Exception e)
+	// 		{
+	// 			System.out.println(e);
+	// 		}
+	// 	}
+	// }
 
 	// Read in a saved graph
 	static Graph loadGraph(String graph) throws Exception
@@ -231,13 +429,10 @@ class Graph implements Serializable
 	// Write out the existing graph
 	static String saveGraph(String input, Graph graph) throws Exception
 	{
-		// String id = uniqueID();
-		// FileOutputStream fos = new FileOutputStream(id);
 		FileOutputStream fos = new FileOutputStream(input);
         ObjectOutputStream oos = new ObjectOutputStream(fos);
         oos.writeObject(graph);
         oos.close();
-        // return id;
 		return input;
 	}
 
@@ -249,16 +444,6 @@ class Graph implements Serializable
         return (BitSet) ois.readObject();
 	}
 
-	// Save an existing binary filter representation
-	static String saveFilter(BitSet filter) throws Exception
-	{
-		String id = uniqueID();
-		FileOutputStream fos = new FileOutputStream(id);
-        ObjectOutputStream oos = new ObjectOutputStream(fos);
-        oos.writeObject(filter);
-        oos.close();
-        return id;
-	}
 
 	// Save the filter along with its name
 	static String saveFilter(BitSet filter, String id) throws Exception
@@ -278,17 +463,6 @@ class Graph implements Serializable
         return (ArrayList<String>) ois.readObject();
 	}
 
-	// Save the code for a node
-	static String saveCode(ArrayList<String> code) throws Exception
-	{
-		String id = uniqueID();
-		FileOutputStream fos = new FileOutputStream(id);
-        ObjectOutputStream oos = new ObjectOutputStream(fos);
-        oos.writeObject(code);
-        oos.close();
-        return id;
-	}
-
 	// Save the code with a given name
 	static String saveCode(ArrayList<String> code, String id) throws Exception
 	{
@@ -299,208 +473,10 @@ class Graph implements Serializable
         return id;
 	}
 
-	// Create sample edges for a family
-	static ArrayList<SampleEdge> sampleEdges(SampleNode source, FamilyNode family)
-	{
-		// Create new arraylist
-		ArrayList<SampleEdge> edges = new ArrayList<SampleEdge>();
-
-		// Iterate over the nodes already in the graph
-		for(SampleNode dest : family.samples)
-		{
-			try
-			{
-				// Create and add new edge to the graph
-				SampleEdge newEdge = new SampleEdge(source, dest);
-				dest.edges.add(newEdge);
-				edges.add(newEdge);
-			}
-
-			catch(Exception e)
-			{
-				System.out.println(e);
-			}
-		}
-
-		// Return the list of edges
-		return edges;
-	}
-
-	// Create the edges for a family
-	static ArrayList<FamilyEdge> familyEdges(FamilyNode source)
-	{
-		// Create new arraylist
-		ArrayList<FamilyEdge> edges = new ArrayList<FamilyEdge>();
-
-		// Iterate over the nodes already in the graph
-		for(FamilyNode dest : nodes)
-		{
-			try
-			{
-				// Create and add new edge to the graph
-				edges.add(new FamilyEdge(source, dest));
-			}
-
-			catch(Exception e)
-			{
-				System.out.println(e);
-			}
-		}
-
-		// Return the list of edges
-		return edges;
-	}
-
-	// Do a comparision against each composite from each family, check the threshold
-	static FamilyNode familyCheck(SampleNode node) throws Exception
-	{
-		for(FamilyNode i : nodes)
-		{
-			if(filterCompare(node.getFilter(), i.getFilter()) >= 25.0)
-			{
-				System.out.println(node.name + " is likely part of " + i.name);
-				return i;
-			}
-		}
-
-		System.out.println("Family not found for " + node.name);
-		return null;
-	}
-
-	// Updates the family when new nodes have been added
-	static void updateFamily(FamilyNode family) throws Exception
-	{
-		// The code for the family
-		ArrayList<String> updater = family.getCode();
-
-		// Update the familys aggragate filter
-		BitSet updatefilter = family.getFilter();
-
-		// Iterate over each of the sample nodes
-		for(SampleNode node : family.samples)
-		{
-
-			// Iterate over each of the edges
-			for (SampleEdge b : node.edges)
-			{
-
-				// Check out whether the edge has been updated
-				if (!b.updated)
-				{
-
-					// Get the code from each of the edges
-					for (String z : b.getCode())
-					{
-						updater.add(z);
-					}
-
-					// Set updated to true
-					b.updated = true;
-
-					// The similar code from the edge
-					ArrayList<String> code = b.getCode();
-					ArrayList<String> grams = new ArrayList<String>();
-					ArrayList<String> lines = new ArrayList<String>();
-
-					// Array to contain the strings as we scan
-					for(String i : code)
-					{
-						String [] split = i.split("\n");
-						for (String x : split)
-						{
-							lines.add(x);
-						}
-					}
-
-					// Create and store the n-gram strings
-					for(int i = 0; i < lines.size(); i++)
-					{
-						// Check if we are at the end of the file
-						if(i + WINDOW_SIZE >= lines.size()) break;
-
-						// Initialize n-gram as empty string
-						String gram = "";
-
-						// Create grams
-						for(int k = 0; k < WINDOW_SIZE; k++) gram += lines.get(i + k);
-
-						// Add gram to list
-						grams.add(gram);
-					}
-
-					// Store to byte array
-					byte[] bytesOfMessage;
-
-					// Message digests are secure one-way hash functions that take arbitrary-sized
-					// data and output a fixed-length hash value
-					MessageDigest md;
-					byte[] thedigest = null;
-
-					for(String i : grams)
-					{
-						// Encodes this String into a sequence of bytes
-						bytesOfMessage = i.getBytes("UTF-8");
-
-						// MessageDigest object that implements MD5
-						md = MessageDigest.getInstance("MD5");
-
-						// Hashes the byte array
-						thedigest = md.digest(bytesOfMessage);
-
-						// Copies last 4 bytes of computation, as MD5 is 16 bytes
-						byte [] trunc = Arrays.copyOfRange(thedigest, 11, 15);
-
-						// Wraps a byte array into a buffer.
-						int index = ByteBuffer.wrap(trunc).getInt();
-
-						// Truncate to 28 bit value
-						index = index & 0x0FFFFFFF;
-
-						// Set index in filter
-						updatefilter.set(index);
-					}
-				}
-			}
-
-			// Write the code to file
-			Graph.saveCode(updater, family.codeID);
-
-			// Write the filter to file
-			Graph.saveFilter(updatefilter, family.filterID);
-		}
-	}
-
-	// Update the family edges
-	static void updateFamilyEdges(FamilyNode family)
-	{
-		// Iterate over each of the family edges
-		for(FamilyEdge i : family.edges)
-		{
-			try
-			{
-				// Check if the source is equal to the family name
-				if(i.source.name.equals(family.name))
-				{
-					i.similarity = filterCompare(family.getFilter(), i.dest.getFilter());
-				}
-
-				else
-				{
-					i.similarity = filterCompare(family.getFilter(), i.source.getFilter());
-				}
-			}
-
-			catch(Exception e)
-			{
-				System.out.println(e);
-			}
-		}
-	}
-
 	// Generate a unique ID based upon date and time
-	static String uniqueID()
+	static String uniqueID(String fileName)
 	{
-		SimpleDateFormat gen = new SimpleDateFormat("ddMMyy-hhmmss.SSS");
-		return gen.format(new Date());
+		SimpleDateFormat gen = new SimpleDateFormat("ddMMyyhhmmss");
+		return fileName + gen.format(new Date());
 	}
 }

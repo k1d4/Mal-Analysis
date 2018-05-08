@@ -32,14 +32,8 @@ class BinaryNode implements Serializable
 		// ArrayList of the decompiled code
 		this.code = code;
 
-		// This will need to be used once the head machine gets the node
-		this.codeID = null;
-
 		// The bitset representation of the decompiled code
 		this.filter = Graph.filter(this.code);
-
-		// Will need to be used at the head machine to save memory
-		this.filterID = null;
 
 		// Initialize at the head machine when constructing the graph
 		this.edges = null;

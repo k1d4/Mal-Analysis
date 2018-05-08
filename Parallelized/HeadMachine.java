@@ -25,6 +25,9 @@ public class HeadMachine
 	// Check if adding family or unknown sample
 	static String binaryType = null;
 
+	// Testing code
+	static ArrayList<BinaryNode> testing = new ArrayList<BinaryNode>();
+
 	public static void main(String [] args)
 	{
 		// Check for the correct arguments
@@ -41,7 +44,6 @@ public class HeadMachine
 		try
 		{
 			// We need to open N connections with all servers... Ideally leave it open
-			// Open a socket with the analysis machine
 			Socket socket = new Socket(InetAddress.getByName(host), port);
 
 			// Fork a listener for that socket
@@ -92,6 +94,7 @@ public class HeadMachine
 				// Do heavy lifting
 				parseInput(select);
 
+				// Need to do something better than this
 				switch(select)
 				{
 					case 3: case 4: case 6:
@@ -126,34 +129,34 @@ public class HeadMachine
 			// Load a saved graph
 			case 1:
 
-				try
-				{
-					// Get the saved file name from the user
-					System.out.print("Name of saved graph: ");
-					input = in.next();
-					graph = Graph.loadGraph(input);
-				}
+				// try
+				// {
+				// 	// Get the saved file name from the user
+				// 	System.out.print("Name of saved graph: ");
+				// 	input = in.next();
+				// 	graph = Graph.loadGraph(input);
+				// }
 
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
+				// catch (Exception e)
+				// {
+				// 	e.printStackTrace();
+				// }
 
 				break;
 
 			// Save the graph to a file
 			case 2:
-				try
-				{
-					// Get the saved name file
-					System.out.print("Name of file: ");
-					input = in.next();
-					graph.saveGraph(input, graph);
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
+				// try
+				// {
+				// 	// Get the saved name file
+				// 	System.out.print("Name of file: ");
+				// 	input = in.next();
+				// 	graph.saveGraph(input, graph);
+				// }
+				// catch (Exception e)
+				// {
+				// 	e.printStackTrace();
+				// }
 
 				break;
 
@@ -176,8 +179,6 @@ public class HeadMachine
 				// Add the family to the graph
 				try
 				{
-					// graph.addFamily(new File(input), family);
-
 					// Checks if the input is a directory
 					if (inputFile.isDirectory())
 					{
@@ -213,7 +214,7 @@ public class HeadMachine
 					if (append == null)
 					{
 						append = new FamilyNode(family);
-						append.edges = Graph.familyEdges(append);
+						// append.edges = Graph.familyEdges(append);
 						graph.nodes.add(append);
 					}
 
@@ -235,7 +236,6 @@ public class HeadMachine
 				break;
 
 			// Add unknown files
-			// distributed function
 			case 4:
 				binaryType = "unknown";
 
@@ -294,21 +294,19 @@ public class HeadMachine
 					for(FamilyEdge j : i.edges)
 					{
 						System.out.println("\t" + j.similarity);
-						System.out.println("\t" + j.source.name);
 						System.out.println("\t" + j.dest.name);
 					}
 
 					System.out.print("\n\n");
 
 					// Iterate over the Sample Nodes
-					for(SampleNode j : i.samples)
+					for(BinaryNode j : i.samples)
 					{
 						System.out.println("\t" + j.name);
 
 						// Iterate over the sample edges
-						for(SampleEdge k : j.edges)
+						for(BinaryEdge k : j.edges)
 						{
-							System.out.println("\t\t" + k.source.name);
 							System.out.println("\t\t" + k.dest.name);
 							System.out.println("\t\t" + k.similarity);
 							System.out.println("\n");

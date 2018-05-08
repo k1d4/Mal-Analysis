@@ -10,10 +10,10 @@ import java.text.SimpleDateFormat;
 public class AnalysisMachineReceive
 {
 	// Take in the file to analyze, run it through RetDec
-	public static void fileAnalysis(ObjectOutputStream outputStream, byte [] data)
+	public static void fileAnalysis(ObjectOutputStream outputStream, byte [] data, String fileName)
 	{
 		// String path for the file
-		String path = Graph.uniqueID();
+		String path = Graph.uniqueID(fileName);
 
 		// Create a file at that path
 		File binary = new File(path);

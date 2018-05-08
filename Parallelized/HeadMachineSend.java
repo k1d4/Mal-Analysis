@@ -17,6 +17,10 @@ public abstract class HeadMachineSend
 			// Send send the file
 			outputStream.writeObject(data);
 			outputStream.flush();
+
+			// Send the file name
+			outputStream.writeObject(sample.toString());
+			outputStream.flush();
 		}
 
 		// Print exception

@@ -98,7 +98,9 @@ class AnalysisHandler extends Thread
 				else if (data instanceof byte[])
 				{
 	
-					AnalysisMachineReceive.fileAnalysis(this.outputStream, (byte[]) data);
+					// Read the following name, and send if to file analysis
+					String fileName = (String) inputStream.readObject();
+					AnalysisMachineReceive.fileAnalysis(this.outputStream, (byte[]) data, fileName);
 				}
 
 				// If it's any other object, send back an error

@@ -5,7 +5,7 @@ import java.util.*;
 class BinaryEdge implements Serializable
 {
 	// Dest node
-	SampleNode dest;
+	BinaryNode dest;
 
 	// ID for the similar code between two nodes
 	String codeID;
@@ -17,21 +17,18 @@ class BinaryEdge implements Serializable
 	boolean updated;
 
 	// Constructor for the sample edge
-	// !!NEED TO MAKE SURE THIS OPERATION ISN'T OCCURING TWICE!!
-	BinaryEdge(SampleNode source, SampleNode dest) throws Exception
+	BinaryEdge(BinaryNode dest) throws Exception
 	{
+		// Destination for this node
 		this.dest = dest;
+
+		// Whether the edge has been updated
 		this.updated = false;
 
-		// Save and load from disk
-		this.similarity = Graph.filterCompare(source.getFilter(), dest.getFilter());
+		// Similarity score between two nodes
+		this.similarity = -1;
 
 		// Save and load from disk
-		this.codeID = Graph.saveCode(Graph.sampleCompare(source.getCode(), dest.getCode()));
-	}
-
-	ArrayList<String> getCode() throws Exception
-	{
-		return Graph.loadCode(codeID);
+		this.codeID = null;
 	}
 }

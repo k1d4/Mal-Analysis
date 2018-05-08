@@ -7,11 +7,17 @@ class FamilyNode implements Serializable
 	// Saved file for the filter
 	String filterID;
 
+	// The actual filter
+	BitSet filter;
+
 	// Name of the code file
 	String codeID;
 
+	// The actual code
+	ArrayList<String> code;
+
 	// The binaries associated with the family
-	ArrayList<SampleNode> samples;
+	ArrayList<BinaryNode> samples;
 
 	// Name of the family
 	String name;
@@ -22,28 +28,7 @@ class FamilyNode implements Serializable
 	// Constructor for the family node
 	FamilyNode(String name) throws Exception
 	{
+		// Set the name for the family
 		this.name = name;
-
-		// Save and load from disk
-		this.filterID = Graph.saveFilter(new BitSet(Graph.FILTER_SIZE));
-
-		// Save and load from disk
-		this.codeID = Graph.saveCode(new ArrayList<String>());
-
-		// Each binary in the family
-		this.samples = new ArrayList<SampleNode>();
-
-		// Edges to other families
-		this.edges = new ArrayList<FamilyEdge>();
-	}
-
-	ArrayList<String> getCode() throws Exception
-	{
-		return Graph.loadCode(codeID);
-	}
-
-	BitSet getFilter() throws Exception
-	{
-		return Graph.loadFilter(filterID);
 	}
 }
