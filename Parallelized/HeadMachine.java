@@ -92,10 +92,15 @@ public class HeadMachine
 				// Do heavy lifting
 				parseInput(select);
 
-				// Wait on the child
-				synchronized(listener)
+				switch(select)
 				{
-					listener.wait();
+					case 3: case 4: case 6:
+						// Wait on the child
+						synchronized(listener)
+						{
+							listener.wait();
+						}
+					default:
 				}
 			}
 		}
@@ -212,17 +217,14 @@ public class HeadMachine
 						graph.nodes.add(append);
 					}
 
-					// ALLOCATE MACHINES TO HANDLE SAMPLES
-					// SEND REQUESTS TO DEOBFUSCATE ETC
+					// Send to available machine
 					while (samples.size() != 0)
 					{
 						if (availableSockets.size() != 0)
 						{
-							ObjectOutputStream send_socket = availableSockets.get(0);
-							File send_sample = samples.get(0);
+							ObjectOutputStream send_socket = availableSockets.remove(0);
+							File send_sample = samples.remove(0);
 							HeadMachineSend.sendBinary(send_socket, send_sample);
-							availableSockets.remove(send_socket);
-							samples.remove(send_sample);
 						}
 					}
 				}
@@ -230,7 +232,6 @@ public class HeadMachine
 				{
 					System.out.println(e);
 				}
-
 				break;
 
 			// Add unknown files
@@ -375,10 +376,8 @@ class HeadMachineListener extends Thread
 		socket = socket;
 		try
 		{
-			System.out.println("FUCK1");
 			outputStream = new ObjectOutputStream(socket.getOutputStream());
 			inputStream = new ObjectInputStream(socket.getInputStream());
-			System.out.println("FUCK3");
 		}
 
 		catch(Exception e)
@@ -400,43 +399,41 @@ class HeadMachineListener extends Thread
 		// Keep the connection open
 		try
 		{
-			synchronized(this)
+
+			while(true)
 			{
-				while(true)
+				Object data = inputStream.readObject();
+
+				// Check if the data is a string
+				if(data instanceof String)
 				{
-					System.out.println("Finishe1!");
-					Object data = inputStream.readObject();
-					System.out.println("Finish2");
-
-					// Check if the data is a string
-					if(data instanceof String)
+					switch((String) data)
 					{
-						switch((String) data)
-						{
-							// Just send a heartbeat back
-							case "HEARTBEAT": HeadMachineSend.heartbeat(outputStream);
+						// Just send a heartbeat back
+						case "HEARTBEAT": HeadMachineSend.heartbeat(outputStream);
 
-							// Send an error, unknown string
-							default: HeadMachineSend.error(outputStream);
-							System.out.println("Bleh3");
-						}
-					}
-
-					else if (data instanceof BinaryNode)
-					{
-						HeadMachineReceive.addNode(outputStream, (BinaryNode) data);
-						System.out.println("Bleh3");
-					}
-
-					// If it's any other object, send back an error
-					else
-					{
-						HeadMachineSend.error(outputStream);
-						System.out.println("Bleh3");
+						// Send an error, unknown string
+						default: HeadMachineSend.error(outputStream);
 					}
 				}
-		}
+
+				else if (data instanceof BinaryNode)
+				{
+					HeadMachineReceive.addNode(outputStream, (BinaryNode) data);
+				}
+
+				// If it's any other object, send back an error
+				else
+				{
+					HeadMachineSend.error(outputStream);
+				}
+
+				synchronized(this)
+				{
+					this.notify();
+				}
 			}
+		}
     		
 
 		// Print the exception

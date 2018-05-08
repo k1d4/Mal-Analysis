@@ -43,6 +43,7 @@ public class HeadMachineReceive
 			{
 				HeadMachine.graph.unknown.add(newNode);
 			}
+			System.out.println("SUCCESS");
 		}
 
 		// Print exception

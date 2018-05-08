@@ -16,9 +16,7 @@ public abstract class HeadMachineSend
 
 			// Send send the file
 			outputStream.writeObject(data);
-			System.out.println("Finishe3!");
 			outputStream.flush();
-			System.out.println("Finishe4!");
 		}
 
 		// Print exception
@@ -56,7 +54,7 @@ public abstract class HeadMachineSend
 		try
 		{
 			// Send back the heartbeat
-			outputStream.writeObject("ERRORMESSAGE");
+			outputStream.writeObject("ERROR-MESSAGE");
 			outputStream.flush();
 		}
 

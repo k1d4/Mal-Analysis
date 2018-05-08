@@ -58,10 +58,8 @@ class AnalysisHandler extends Thread
 
 		try
 		{
-			System.out.println("FUCK1");
 			outputStream = new ObjectOutputStream(socket.getOutputStream());
 			inputStream = new ObjectInputStream(socket.getInputStream());
-			System.out.println("FUCK2");
 		}
 
 		catch(Exception e)
@@ -76,43 +74,38 @@ class AnalysisHandler extends Thread
 		// Keep the connection open
 		try
 		{
-			synchronized(this)
+			while(true)
 			{
-				while(true)
+				// Create an ObjectInputStream and read an object from it
+				Object data = inputStream.readObject();
+				
+
+				// Check if the data is a string
+				if(data instanceof String)
 				{
-					// Create an ObjectInputStream and read an object from it
-					System.out.println("Finished1!");
-					Object data = inputStream.readObject();
-					System.out.println("Finished2!");
-					
-
-					// Check if the data is a string
-					if(data instanceof String)
-					{
-			
-						switch((String) data)
-						{
-							// Just send a heartbeat back
-							case "HEARTBEAT": AnalysisMachineSend.heartbeat(this.outputStream);
-
-							// Send an error, unknown string
-							default: AnalysisMachineSend.error(this.outputStream);
-						}
-					}
-
-					// If it is a file, then analyze it
-					else if (data instanceof byte[])
-					{
 		
-						AnalysisMachineReceive.fileAnalysis(this.outputStream, (byte[]) data);
-					}
-
-					// If it's any other object, send back an error
-					else
+					switch((String) data)
 					{
-		
-						AnalysisMachineSend.error(this.outputStream);
+						// Just send a heartbeat back
+						case "HEARTBEAT": AnalysisMachineSend.heartbeat(this.outputStream);
+
+						// Send an error, unknown string
+						default: AnalysisMachineSend.error(this.outputStream);
 					}
+				}
+
+				// If it is a file, then analyze it
+				else if (data instanceof byte[])
+				{
+	
+					AnalysisMachineReceive.fileAnalysis(this.outputStream, (byte[]) data);
+				}
+
+				// If it's any other object, send back an error
+				else
+				{
+	
+					AnalysisMachineSend.error(this.outputStream);
 				}
 			}
 		}

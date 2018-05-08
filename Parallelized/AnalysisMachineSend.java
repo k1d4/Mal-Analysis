@@ -10,11 +10,9 @@ public class AnalysisMachineSend
 	{
 		try
 		{
-			System.out.println("Finish3!");
 			// Send back the binary node
-			outputStream.writeObject("HELP");
+			outputStream.writeObject(node);
 			outputStream.flush();
-			System.out.println("Finishe4!");
 		}
 
 		// Print exception
@@ -47,7 +45,7 @@ public class AnalysisMachineSend
 		try
 		{
 			// Send back the heartbeat
-			outputStream.writeObject("ERRORMESSAGE");
+			outputStream.writeObject("ERROR-MESSAGE");
 			outputStream.flush();
 		}
 

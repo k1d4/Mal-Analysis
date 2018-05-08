@@ -86,7 +86,6 @@ public class AnalysisMachineReceive
 			}
 
 			// Normalize input and write to output
-			//!!NEED TO WORK ON MORE NORMALIZATION!!
 			while(asmScan.hasNext())
 			{
 				// Get next line
