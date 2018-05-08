@@ -8,10 +8,10 @@ import java.util.concurrent.TimeUnit;
 public class HeadMachine
 {
 	// Global list of all analysis machines
-	static ArrayList<Socket> onlineSockets = new ArrayList<Socket>();
+	static ArrayList<ObjectOutputStream> onlineSockets = new ArrayList<ObjectOutputStream>();
 
 	// List of machines that are currently available
-	static ArrayList<Socket> availableSockets = new ArrayList<Socket>();
+	static ArrayList<ObjectOutputStream> availableSockets = new ArrayList<ObjectOutputStream>();
 
 	// The graph that is created to represent our ecosystem.
 	static Graph graph = new Graph();
@@ -44,12 +44,12 @@ public class HeadMachine
 			// Open a socket with the analysis machine
 			Socket socket = new Socket(InetAddress.getByName(host), port);
 
-			// Add the analysis machine to the online sockets and available list
-			onlineSockets.add(socket);
-			availableSockets.add(socket);
-
 			// Fork a listener for that socket
 			HeadMachineListener listener = new HeadMachineListener(socket);
+
+			// Add the analysis machine to the online sockets and available list
+			onlineSockets.add(listener.outputStream);
+			availableSockets.add(listener.outputStream);
 
 			// Start the listener
 			listener.start();
@@ -134,6 +134,8 @@ public class HeadMachine
 					e.printStackTrace();
 				}
 
+				break;
+
 			// Save the graph to a file
 			case 2:
 				try
@@ -147,6 +149,8 @@ public class HeadMachine
 				{
 					e.printStackTrace();
 				}
+
+				break;
 
 			// Get a malware family from the user
 			// distributed function
@@ -199,6 +203,7 @@ public class HeadMachine
 						}
 					}
 
+
 					// If the family does not already exist, create a new one
 					if (append == null)
 					{
@@ -213,7 +218,7 @@ public class HeadMachine
 					{
 						if (availableSockets.size() != 0)
 						{
-							Socket send_socket = availableSockets.get(0);
+							ObjectOutputStream send_socket = availableSockets.get(0);
 							File send_sample = samples.get(0);
 							HeadMachineSend.sendBinary(send_socket, send_sample);
 							availableSockets.remove(send_socket);
@@ -225,6 +230,8 @@ public class HeadMachine
 				{
 					System.out.println(e);
 				}
+
+				break;
 
 			// Add unknown files
 			// distributed function
@@ -257,7 +264,7 @@ public class HeadMachine
 					{
 						if (availableSockets.size() != 0)
 						{
-							Socket send_socket = availableSockets.get(0);
+							ObjectOutputStream send_socket = availableSockets.get(0);
 							File send_sample = samples.get(0);
 							HeadMachineSend.sendBinary(send_socket, send_sample);
 							availableSockets.remove(send_socket);
@@ -269,6 +276,8 @@ public class HeadMachine
 				{
 					System.out.println(e);
 				}
+
+				break;
 
 			// Print out the graph
 			case 5:
@@ -307,6 +316,9 @@ public class HeadMachine
 
 					System.out.print("\n\n\n\n-----------------------------------------------");
 				}
+
+				break;
+
 			case 6:
 			// Presumably sets up another server
 			// Get the host and port
@@ -318,8 +330,8 @@ public class HeadMachine
 				try
 				{
 					Socket socket = new Socket(InetAddress.getByName(host), port);
-					onlineSockets.add(socket);
-					availableSockets.add(socket);
+					onlineSockets.add(new ObjectOutputStream(socket.getOutputStream()));
+					availableSockets.add(new ObjectOutputStream(socket.getOutputStream()));
 
 					// Fork the listener
 					HeadMachineListener listener = new HeadMachineListener(socket);
@@ -331,6 +343,8 @@ public class HeadMachine
 				{
 					System.out.println(e);
 				}
+
+				break;
 		}
 	}
 }
@@ -352,11 +366,25 @@ class HeadMachineListener extends Thread
 {
 	// Need the socket to listen on
 	Socket socket;
+	ObjectOutputStream outputStream;
+	ObjectInputStream inputStream;
 
 	// Constructor HeadMachineListener
 	HeadMachineListener(Socket socket)
 	{
 		socket = socket;
+		try
+		{
+			System.out.println("FUCK1");
+			outputStream = new ObjectOutputStream(socket.getOutputStream());
+			inputStream = new ObjectInputStream(socket.getInputStream());
+			System.out.println("FUCK3");
+		}
+
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
 	}
 
 	/**
@@ -374,11 +402,11 @@ class HeadMachineListener extends Thread
 		{
 			synchronized(this)
 			{
-        		while(true)
+				while(true)
 				{
-					// Create an ObjectInputStream and read an object from it
-					ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+					System.out.println("Finishe1!");
 					Object data = inputStream.readObject();
+					System.out.println("Finish2");
 
 					// Check if the data is a string
 					if(data instanceof String)
@@ -386,26 +414,30 @@ class HeadMachineListener extends Thread
 						switch((String) data)
 						{
 							// Just send a heartbeat back
-							case "HEARTBEAT": HeadMachineSend.heartbeat(socket);
+							case "HEARTBEAT": HeadMachineSend.heartbeat(outputStream);
 
 							// Send an error, unknown string
-							default: HeadMachineSend.error(socket);
+							default: HeadMachineSend.error(outputStream);
+							System.out.println("Bleh3");
 						}
 					}
 
 					else if (data instanceof BinaryNode)
 					{
-						HeadMachineReceive.addNode(socket, (BinaryNode) data);
+						HeadMachineReceive.addNode(outputStream, (BinaryNode) data);
+						System.out.println("Bleh3");
 					}
 
 					// If it's any other object, send back an error
 					else
 					{
-						HeadMachineSend.error(socket);
+						HeadMachineSend.error(outputStream);
+						System.out.println("Bleh3");
 					}
 				}
-      		}
 		}
+			}
+    		
 
 		// Print the exception
 		catch(Exception e)

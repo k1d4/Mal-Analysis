@@ -6,15 +6,15 @@ import java.util.concurrent.*;
 // Methods for sending data back to the HeadMachine
 public class AnalysisMachineSend
 {
-	public static void sendBinaryNode(Socket socket, BinaryNode node)
+	public static void sendBinaryNode(ObjectOutputStream outputStream, BinaryNode node)
 	{
 		try
 		{
-			// Get output stream from socket
-			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-
+			System.out.println("Finish3!");
 			// Send back the binary node
-			outputStream.writeObject(node);
+			outputStream.writeObject("HELP");
+			outputStream.flush();
+			System.out.println("Finishe4!");
 		}
 
 		// Print exception
@@ -25,15 +25,13 @@ public class AnalysisMachineSend
 	}
 
 	// Send a heartbeat back to the HeadMachine
-	public static void heartbeat(Socket socket)
+	public static void heartbeat(ObjectOutputStream outputStream)
 	{
 		try
 		{
-			// Get output stream from socket
-			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-
 			// Send back the heartbeat
-			outputStream.writeBytes("HEARTBEAT");
+			outputStream.writeObject("HEARTBEAT");
+			outputStream.flush();
 		}
 
 		// Something Failed
@@ -44,15 +42,13 @@ public class AnalysisMachineSend
 	}
 
 	// Send a heartbeat back to the HeadMachine
-	public static void error(Socket socket)
+	public static void error(ObjectOutputStream outputStream)
 	{
 		try
 		{
-			// Get output stream from socket
-			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-
 			// Send back the heartbeat
-			outputStream.writeBytes("ERRORMESSAGE");
+			outputStream.writeObject("ERRORMESSAGE");
+			outputStream.flush();
 		}
 
 		// Something Failed

@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat;
 public class AnalysisMachineReceive
 {
 	// Take in the file to analyze, run it through RetDec
-	public static void fileAnalysis(Socket socket, byte [] data)
+	public static void fileAnalysis(ObjectOutputStream outputStream, byte [] data)
 	{
 		// String path for the file
 		String path = Graph.uniqueID();
@@ -38,7 +38,7 @@ public class AnalysisMachineReceive
 		}
 
 		// Send the node back to the Head Machine
-		AnalysisMachineSend.sendBinaryNode(socket, newNode);
+		AnalysisMachineSend.sendBinaryNode(outputStream, newNode);
 	}
 
 	// Uses RetDec to deobfuscate a file

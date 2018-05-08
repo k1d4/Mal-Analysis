@@ -8,17 +8,17 @@ import java.util.regex.*;
 public abstract class HeadMachineSend
 {
 
-	public static void sendBinary(Socket socket, File sample)
+	public static void sendBinary(ObjectOutputStream outputStream, File sample)
 	{
 		try
 		{
 			byte[] data = Files.readAllBytes(sample.toPath());
 
-			// Get output stream from socket
-			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-
-			// Send back the heartbeat
-			outputStream.write(data);
+			// Send send the file
+			outputStream.writeObject(data);
+			System.out.println("Finishe3!");
+			outputStream.flush();
+			System.out.println("Finishe4!");
 		}
 
 		// Print exception
@@ -33,15 +33,13 @@ public abstract class HeadMachineSend
 	 * they are both connected to each other. If the heartbeat is not returned,
 	 * the session will end.
 	 */
-	public static void heartbeat(Socket socket)
+	public static void heartbeat(ObjectOutputStream outputStream)
 	{
 		try
 		{
-			// Get output stream from socket
-			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-
 			// Send back the heartbeat
-			outputStream.writeBytes("HEARTBEAT");
+			outputStream.writeObject("HEARTBEAT");
+			outputStream.flush();
 		}
 
 		// Something Failed
@@ -53,15 +51,13 @@ public abstract class HeadMachineSend
 
 	// Send a heartbeat back to the AnalysisMachine
 	// We don't necessarily need this, but maybe we do
-	public static void error(Socket socket)
+	public static void error(ObjectOutputStream outputStream)
 	{
 		try
 		{
-			// Get output stream from socket
-			ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-
 			// Send back the heartbeat
-			outputStream.writeBytes("ERRORMESSAGE");
+			outputStream.writeObject("ERRORMESSAGE");
+			outputStream.flush();
 		}
 
 		// Something Failed

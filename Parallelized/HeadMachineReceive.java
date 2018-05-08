@@ -1,5 +1,6 @@
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
+import java.io.*;
 
 /**
  * HeadMachineReceive contains methods that handle messages from the server,
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class HeadMachineReceive
 {
-	public static void addNode(Socket conn, BinaryNode node)
+	public static void addNode(ObjectOutputStream conn, BinaryNode node)
 	{
 		// Free socket for other binaries
 		HeadMachine.availableSockets.add(conn);
@@ -51,7 +52,7 @@ public class HeadMachineReceive
 		}
 	}
 
-	public static void generalFailure(Socket conn, byte [] buffer)
+	public static void generalFailure(ObjectOutputStream conn, byte [] buffer)
 	{
 		System.out.println("");
 		System.out.println("***** Operation Failed! *****");
