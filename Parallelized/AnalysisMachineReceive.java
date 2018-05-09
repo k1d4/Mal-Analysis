@@ -15,9 +15,6 @@ public class AnalysisMachineReceive
 		// Get the familyname from the fileName
 		String [] parts = fileName.split("%");
 
-		// Just to make sure things are working
-		System.out.println("Received " + parts[0] + " of family " + parts[1] + ".");
-
 		// String filename for the file
 		String name = Graph.uniqueID(parts[0]);
 
@@ -63,7 +60,7 @@ public class AnalysisMachineReceive
 		try
 		{
 			// Create log file
-			File log = new File(AnalysisMachine.directory + "/Log.txt");
+			// File log = new File(AnalysisMachine.directory + "/Log.txt");
 
 			// Call retdec-decompiler.sh on the file
 			ProcessBuilder builder = new ProcessBuilder("retdec-decompiler.sh", "-l", "py", inFile.toString());
@@ -71,8 +68,8 @@ public class AnalysisMachineReceive
 			// Change the directory of the process
 			builder.directory(AnalysisMachine.directory);
 
-			// Output to the log file
-			builder.redirectOutput(log);
+			// Output to parent process System.out
+			builder.inheritIO();
 
 			// Start process
 			p = builder.start();

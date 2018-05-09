@@ -31,14 +31,14 @@ public class HeadMachineReceive
 		catch(Exception e)
 		{
 			System.out.println(e);
+			System.out.println("Locking Error!");
 		}
 
 		// Just to make sure things are working
-		System.out.println("Received " + node.name + " of " + family + ".");
+		System.out.println("Received " + node.name + ".");
 
 		// Free the machine for analysis of anther binary
 		HeadMachine.availableSockets.add(conn);
-		System.out.println("Added: " + conn);
 
 		// Testing which family the node is a part of
 		FamilyNode test = null;

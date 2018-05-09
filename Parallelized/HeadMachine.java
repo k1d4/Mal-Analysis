@@ -41,7 +41,7 @@ public class HeadMachine
 			// Add the analysis machine to the online sockets and available list
 			onlineSockets.add(listener.outputStream);
 
-			System.out.println("Added: " + listener.outputStream);
+			System.out.println("Added: " + socket);
 			availableSockets.add(listener.outputStream);
 
 			// Start the listener
@@ -188,7 +188,6 @@ public class HeadMachine
 						if (availableSockets.size() != 0)
 						{
 							ObjectOutputStream send_socket = availableSockets.remove(0);
-							System.out.println("Removed: " + send_socket);
 							File send_sample = binaries.remove(0);
 							HeadMachineSend.sendBinary(send_socket, send_sample, append.name);
 						}
@@ -237,7 +236,6 @@ public class HeadMachine
 						if (availableSockets.size() != 0)
 						{
 							ObjectOutputStream send_socket = availableSockets.remove(0);
-							System.out.println("Removed: " + send_socket);
 							File send_sample = binaries.remove(0);
 							HeadMachineSend.sendBinary(send_socket, send_sample, "unknown");
 						}
@@ -309,7 +307,6 @@ public class HeadMachine
 
 					// Add the analysis machine to the online sockets and available list
 					onlineSockets.add(listener.outputStream);
-					System.out.println("Added: " + listener.outputStream);
 					availableSockets.add(listener.outputStream);
 
 					// Start the listener
@@ -387,22 +384,8 @@ class HeadMachineListener extends Thread
 			{
 				Object data = inputStream.readObject();
 
-				// Check if the data is a string
-				if(data instanceof String)
-				{
-					switch((String) data)
-					{
-						// Just send a heartbeat back
-						case "HEARTBEAT": HeadMachineSend.heartbeat(outputStream);
-						break;
-
-						// Send an error, unknown string
-						default: HeadMachineSend.error(outputStream);
-					}
-				}
-
 				// If a node is received
-				else if (data instanceof BinaryNode)
+				if (data instanceof BinaryNode)
 				{
 					// Must have received a node, read it in
 					HeadMachineReceive.addNode(outputStream, (BinaryNode) data, (String) inputStream.readObject());

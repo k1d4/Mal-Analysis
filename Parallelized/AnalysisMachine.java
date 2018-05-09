@@ -92,22 +92,8 @@ class AnalysisHandler extends Thread
 				// Read an object from the input stream
 				Object data = inputStream.readObject();
 
-				// Check if the read data is a string
-				if(data instanceof String)
-				{
-					switch((String) data)
-					{
-						// Just send a heartbeat back
-						case "HEARTBEAT": AnalysisMachineSend.heartbeat(this.outputStream);
-						break;
-
-						// Send an error, unknown string
-						default: AnalysisMachineSend.error(this.outputStream);
-					}
-				}
-
 				// If it is a file, then analyze it
-				else if (data instanceof byte[])
+				if (data instanceof byte[])
 				{
 					// Read in the filename then analyze
 					AnalysisMachineReceive.fileAnalysis(this.outputStream, (byte[]) data, (String) inputStream.readObject());

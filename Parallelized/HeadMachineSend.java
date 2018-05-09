@@ -22,36 +22,9 @@ public abstract class HeadMachineSend
 			// Send the file name and family name
 			outputStream.writeObject(binary.toString() + "%" + family);
 			outputStream.flush();
-
-			// Just to make sure things are working
-			System.out.println("Sent " + binary + " of family " + family + ".");
 		}
 
 		// Print exception
-		catch(Exception e)
-		{
-			System.out.println(e);
-		}
-	}
-
-	/**
-	 * Sends a heartbeat to the server, in order for the server and HeadMachine to ensure
-	 * they are both connected to each other. If the heartbeat is not returned,
-	 * the session will end.
-	 */
-	public static void heartbeat(ObjectOutputStream outputStream)
-	{
-		try
-		{
-			// Send back the heartbeat
-			outputStream.writeObject("HEARTBEAT");
-			outputStream.flush();
-
-			// Just to make sure things are working
-			System.out.println("Sent heartbeat.");
-		}
-
-		// Something Failed
 		catch(Exception e)
 		{
 			System.out.println(e);
