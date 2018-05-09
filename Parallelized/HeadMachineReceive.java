@@ -1,6 +1,7 @@
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 import java.io.*;
+import java.util.concurrent.*;
 
 /**
  * HeadMachineReceive contains methods that handle messages from the server,
@@ -19,11 +20,25 @@ public class HeadMachineReceive
 {
 	public static void addNode(ObjectOutputStream conn, BinaryNode node, String family)
 	{
+		
+		// Try to acquire the lock
+		try
+		{
+			// Release the lock
+			Graph.lock.acquire();
+		}
+
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
+
 		// Just to make sure things are working
 		System.out.println("Received " + node.name + " of " + family + ".");
 
 		// Free the machine for analysis of anther binary
 		HeadMachine.availableSockets.add(conn);
+		System.out.println("Added: " + conn);
 
 		// Testing which family the node is a part of
 		FamilyNode test = null;
@@ -70,6 +85,9 @@ public class HeadMachineReceive
 		{
 			System.out.println(e);
 		}
+
+		// Release the lock
+		Graph.lock.release();
 	}
 
 	public static void generalFailure(ObjectOutputStream conn, byte [] buffer)

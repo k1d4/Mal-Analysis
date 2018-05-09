@@ -3,6 +3,7 @@ import java.io.*;
 import java.util.*;
 import java.nio.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 // Head machine, where graph analysis and construction occurs
 public class HeadMachine
@@ -39,6 +40,8 @@ public class HeadMachine
 
 			// Add the analysis machine to the online sockets and available list
 			onlineSockets.add(listener.outputStream);
+
+			System.out.println("Added: " + listener.outputStream);
 			availableSockets.add(listener.outputStream);
 
 			// Start the listener
@@ -124,6 +127,18 @@ public class HeadMachine
 				// See whether the family already exists
 				append = null;
 
+				// Try to acquire the lock
+				try
+				{
+					// Release the lock
+					Graph.lock.acquire();
+				}
+
+				catch(Exception e)
+				{
+					System.out.println(e);
+				}
+
 				// Add the family to the graph
 				try
 				{
@@ -173,6 +188,7 @@ public class HeadMachine
 						if (availableSockets.size() != 0)
 						{
 							ObjectOutputStream send_socket = availableSockets.remove(0);
+							System.out.println("Removed: " + send_socket);
 							File send_sample = binaries.remove(0);
 							HeadMachineSend.sendBinary(send_socket, send_sample, append.name);
 						}
@@ -184,6 +200,9 @@ public class HeadMachine
 				{
 					System.out.println(e);
 				}
+
+				// Release the lock
+				Graph.lock.release();
 
 				break;
 
@@ -218,6 +237,7 @@ public class HeadMachine
 						if (availableSockets.size() != 0)
 						{
 							ObjectOutputStream send_socket = availableSockets.remove(0);
+							System.out.println("Removed: " + send_socket);
 							File send_sample = binaries.remove(0);
 							HeadMachineSend.sendBinary(send_socket, send_sample, "unknown");
 						}
@@ -281,13 +301,18 @@ public class HeadMachine
 
 				try
 				{
-					// Get the socket, then create the outputstreams
+					// We need to open N connections with all servers... Ideally leave it open
 					Socket socket = new Socket(InetAddress.getByName(host), port);
-					onlineSockets.add(new ObjectOutputStream(socket.getOutputStream()));
-					availableSockets.add(new ObjectOutputStream(socket.getOutputStream()));
 
 					// Create and start the new listener
 					HeadMachineListener listener = new HeadMachineListener(socket);
+
+					// Add the analysis machine to the online sockets and available list
+					onlineSockets.add(listener.outputStream);
+					System.out.println("Added: " + listener.outputStream);
+					availableSockets.add(listener.outputStream);
+
+					// Start the listener
 					listener.start();
 				}
 

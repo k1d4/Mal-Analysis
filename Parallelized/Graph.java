@@ -3,6 +3,7 @@ import java.io.*;
 import java.nio.*;
 import java.security.*;
 import java.text.*;
+import java.util.concurrent.*;
 
 // Object the represents the graph
 class Graph implements Serializable
@@ -24,6 +25,9 @@ class Graph implements Serializable
 
 	// Unknown nodes in the graph
 	static ArrayList<BinaryNode> unknown;
+
+	// Lock for the graph, shouldn't be access by multiple threads at the same time
+	static Semaphore lock = new Semaphore(1);
 
 	// Constructor for the graph
 	Graph()
