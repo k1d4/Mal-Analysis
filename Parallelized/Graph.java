@@ -8,17 +8,14 @@ import java.util.concurrent.*;
 // Object the represents the graph
 class Graph implements Serializable
 {
-	// Minimum amount of similar code to consider it a similar segment
-	static final int MIN_CODE_THRESHOLD = 8;
-
 	// The percentage similarity an edge must be for it to be considered within a family
 	static final double EDGE_SIMILARITY_THRESHOLD = 10;
 
 	// The size of the filter used to hash the malware
-	static final int FILTER_SIZE = (int) Math.pow(2, 28);
+	static final int FILTER_SIZE = (int) Math.pow(2, 24);
 
 	// The window size used for the hash
-	static final int WINDOW_SIZE = 8;
+	static final int WINDOW_SIZE = 16;
 
 	// Nodes in the graph
 	static ArrayList<FamilyNode> nodes;
@@ -84,7 +81,7 @@ class Graph implements Serializable
 			int index = ByteBuffer.wrap(trunc).getInt();
 
 			// Truncate to 24 bit value
-			index = index & 0x0FFFFFFF;
+			index = index & 0x00FFFFFF;
 
 			// Set index in filter
 			filter.set(index);
