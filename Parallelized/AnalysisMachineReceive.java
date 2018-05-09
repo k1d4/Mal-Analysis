@@ -23,10 +23,10 @@ public class AnalysisMachineReceive
 		}
 
 		// String filename for the file
-		String name = Graph.uniqueID(parts[0]);
+		String name = parts[0];
 
 		// Create a file at that path
-		File binary = new File(AnalysisMachine.directory + "/" + Graph.uniqueID(parts[0]));
+		File binary = new File(AnalysisMachine.directory + "/" + parts[0]);
 
 		// Creating a new node for the graph
 		BinaryNode newNode = null;

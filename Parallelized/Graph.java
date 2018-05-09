@@ -223,11 +223,4 @@ class Graph implements Serializable
 			}
 		}
 	}
-
-	// Generate a unique ID based upon date and time
-	static String uniqueID(String fileName)
-	{
-		SimpleDateFormat gen = new SimpleDateFormat("ddMMyyhhmmss");
-		return fileName + gen.format(new Date());
-	}
 }

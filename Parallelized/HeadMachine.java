@@ -64,7 +64,8 @@ public class HeadMachine
 				System.out.println("\t1. Add family to graph");
 				System.out.println("\t2. Add unknown binaries");
 				System.out.println("\t3. Print graph");
-				System.out.println("\t4. Add analysis machine");
+				System.out.println("\t4. Output classifications to csv");
+				System.out.println("\t5. Add analysis machine");
 
 				// Get which option the user wants
 				try
@@ -202,7 +203,50 @@ public class HeadMachine
 
 				break;
 
+			// Print out the graph
 			case 4:
+
+				// Might get a null pointer exception, it's okay! Just fail and try again
+				try
+				{
+					// Create a printwriter to output with
+					PrintWriter pw = new PrintWriter(new File("test-classifications.csv"));
+
+					// Create a StringBuilder for speed stuff
+					StringBuilder sb = new StringBuilder();
+
+					// Iterate over each family node
+					for(FamilyNode i : graph.nodes)
+					{
+						sb.append(i.name + ",");
+
+						// Iterate over the Sample Nodes
+						for(BinaryNode j : i.binaries)
+						{
+							sb.append(j.name + ",");
+						}
+
+						// New row
+						sb.append("\n");
+					}
+
+					// Write out the string
+					pw.write(sb.toString());
+
+					// Close the printwriter
+					pw.close();
+				}
+
+				// If a null pointer occurs
+				catch(Exception e)
+				{
+					System.out.println(e);
+					break;
+				}
+
+				break;
+
+			case 5:
 				// Get the host and port
 				System.out.print("Input Host: ");
 				String host = in.next();
