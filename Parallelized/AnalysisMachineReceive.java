@@ -15,6 +15,13 @@ public class AnalysisMachineReceive
 		// Get the familyname from the fileName
 		String [] parts = fileName.split("%");
 
+		// Exit if there is not a filename and a family name
+		if(parts.length != 2)
+		{
+			AnalysisMachineSend.error(outputStream);
+			return;
+		}
+
 		// String filename for the file
 		String name = Graph.uniqueID(parts[0]);
 
@@ -36,6 +43,7 @@ public class AnalysisMachineReceive
 			newNode = new BinaryNode(decompiledCode);
 		}
 
+		// Just in case there was an error
 		catch(Exception e)
 		{
 			System.out.println(e);

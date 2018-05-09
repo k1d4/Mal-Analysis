@@ -3,7 +3,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
-
+import java.util.concurrent.TimeUnit;
 
 public abstract class HeadMachineSend
 {
@@ -19,8 +19,11 @@ public abstract class HeadMachineSend
 			outputStream.writeObject(data);
 			outputStream.flush();
 
+			// Trim the filename
+			String fileName = binary.toString().substring(binary.toString().lastIndexOf("/") + 1);
+
 			// Send the file name and family name
-			outputStream.writeObject(binary.toString() + "%" + family);
+			outputStream.writeObject(fileName + "%" + family);
 			outputStream.flush();
 		}
 
@@ -40,9 +43,6 @@ public abstract class HeadMachineSend
 			// Send back the heartbeat
 			outputStream.writeObject("ERROR-MESSAGE");
 			outputStream.flush();
-
-			// Just to make sure things are working
-			System.out.println("Sent error.");
 		}
 
 		// Something Failed

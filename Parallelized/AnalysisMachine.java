@@ -99,10 +99,10 @@ class AnalysisHandler extends Thread
 					AnalysisMachineReceive.fileAnalysis(this.outputStream, (byte[]) data, (String) inputStream.readObject());
 				}
 
-				// If it's any other object, send back an error
+				// If it's any other object, see what it is...
 				else
 				{
-					AnalysisMachineSend.error(this.outputStream);
+					System.out.println(data);
 				}
 			}
 		}

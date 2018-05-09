@@ -20,20 +20,6 @@ public class HeadMachineReceive
 {
 	public static void addNode(ObjectOutputStream conn, BinaryNode node, String family)
 	{
-		
-		// Try to acquire the lock
-		try
-		{
-			// Release the lock
-			// Graph.lock.acquire();
-		}
-
-		// Locking Error
-		catch(Exception e)
-		{
-			System.out.println(e);
-		}
-
 		// Just to make sure things are working
 		System.out.println("Received " + node.name + ".");
 
@@ -85,9 +71,6 @@ public class HeadMachineReceive
 		{
 			System.out.println(e);
 		}
-
-		// Release the lock
-		// Graph.lock.release();
 	}
 
 	public static void generalFailure(ObjectOutputStream conn, byte [] buffer)

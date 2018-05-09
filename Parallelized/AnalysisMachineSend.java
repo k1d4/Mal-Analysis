@@ -2,6 +2,7 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 
 // Methods for sending data back to the HeadMachine
 public class AnalysisMachineSend
@@ -34,9 +35,6 @@ public class AnalysisMachineSend
 			// Send back the heartbeat
 			outputStream.writeObject("ERROR-MESSAGE");
 			outputStream.flush();
-
-			// Just to make sure things are working
-			System.out.println("Sent error.");
 		}
 
 		// Something Failed

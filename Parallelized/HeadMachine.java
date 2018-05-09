@@ -42,7 +42,6 @@ public class HeadMachine
 			onlineSockets.add(listener.outputStream);
 
 			// Add the socket to the available sockets
-			System.out.println(socket);
 			availableSockets.add(listener.outputStream);
 
 			// Start the listener
@@ -105,8 +104,14 @@ public class HeadMachine
 		// Get input file list
 		ArrayList<File> binaries;
 
+		// The input from the user
 		String input;
+
+		// The input file
 		File inputFile;
+
+		// Sender thread
+		HeadMachineSender sender;
 
 		// Switch on the users selection
 		switch(select)
@@ -116,105 +121,17 @@ public class HeadMachine
 
 				// Get the malware family directory
 				System.out.print("Input Directory: ");
-
-				// Gets the input directory
 				input = in.next();
-				inputFile = new File(input);
 
 				// Name to be associated with the family
 				System.out.print("Family: ");
 				String family = in.next();
 
-				// See whether the family already exists
-				append = null;
+				// Create a sender for that socket
+				sender = new HeadMachineSender(input, family);
 
-				// Try to acquire the lock
-				try
-				{
-					// Release the lock
-					// Graph.lock.acquire();
-				}
-
-				catch(Exception e)
-				{
-					System.out.println(e);
-				}
-
-				// Add the family to the graph
-				try
-				{
-					// Checks if the input is a directory
-					if (inputFile.isDirectory())
-					{
-						binaries = new ArrayList<File>(Arrays.asList(inputFile.listFiles()));
-					}
-
-
-					// Else check if it is a file
-					else if (inputFile.exists())
-					{
-						binaries = new ArrayList<File>();
-						binaries.add(inputFile);
-					}
-
-					// Else the file doesn't exist
-					else
-					{
-						System.out.println("File does not exist!");
-						return;
-					}
-
-					// For each FamilyNode in the graph, check if the Family we are adding already exists
-					for(FamilyNode node : graph.nodes)
-					{
-						if (node.name.equals(family))
-						{
-							append = node;
-							break;
-						}
-					}
-
-					// If the family does not already exist, create a new one
-					if (append == null)
-					{
-						// Create the new family node
-						append = new FamilyNode(family);
-
-						// Add the family node to the family list
-						Graph.addFamily(append);
-					}
-
-					// Send binaries to analysis machines
-					while (binaries.size() != 0)
-					{
-						// FIX WITH LOCKING
-						TimeUnit.SECONDS.sleep(1);
-
-						// Check if there is a socket available to send to 
-						if (availableSockets.size() != 0)
-						{
-							ObjectOutputStream send_socket = availableSockets.get(0);
-							File send_sample = binaries.get(0);
-
-							// Make sure we actually got a socket and a file
-							if(send_sample != null && send_socket != null)
-							{
-								availableSockets.remove(0);
-								binaries.remove(0);
-								HeadMachineSend.sendBinary(send_socket, send_sample, "unknown");
-							}
-						}
-					}
-				}
-
-				// Some exception has occurred
-				catch (Exception e)
-				{
-					System.out.println(e);
-				}
-
-				// Release the lock
-				// Graph.lock.release();
+				// Start the sender
+				sender.start();
 
 				break;
 
@@ -223,53 +140,12 @@ public class HeadMachine
 
 				System.out.print("Input Binary Path: ");
 				input = in.next();
-				inputFile = new File(input);
 
-				append = null;
+				// Create a sender for that socket
+				sender = new HeadMachineSender(input, "unknown");
 
-				try
-				{
-					// Check if the file to be added exists
-					if (inputFile.exists())
-					{
-						binaries = new ArrayList<File>();
-						binaries.add(inputFile);
-					}
-
-					// The file doesn't exist
-					else
-					{
-						System.out.println("File does not exist");
-						return;
-					}
-
-					// Send the sample to an available machine
-					while (binaries.size() != 0)
-					{
-						TimeUnit.SECONDS.sleep(1);
-
-						// Check there is a socket available to send to
-						if (availableSockets.size() != 0)
-						{
-							ObjectOutputStream send_socket = availableSockets.get(0);
-							File send_sample = binaries.get(0);
-
-							// Make sure we actually got a socket and a file
-							if(send_sample != null && send_socket != null)
-							{
-								availableSockets.remove(0);
-								binaries.remove(0);
-								HeadMachineSend.sendBinary(send_socket, send_sample, "unknown");
-							}
-						}
-					}
-				}
-
-				// Catch an error if it occurred
-				catch (Exception e)
-				{
-					System.out.println(e);
-				}
+				// Start the sender
+				sender.start();
 
 				break;
 
@@ -313,7 +189,6 @@ public class HeadMachine
 				break;
 
 			case 4:
-				// Presumably sets up another server
 				// Get the host and port
 				System.out.print("Input Host: ");
 				String host = in.next();
@@ -386,7 +261,7 @@ class HeadMachineListener extends Thread
 		}
 
 		// Print connection status
-		System.out.println("Connected to " + socket);
+		System.out.println(socket);
 	}
 
 	/**
@@ -405,23 +280,19 @@ class HeadMachineListener extends Thread
 
 			while(true)
 			{
-				System.out.println("1");
 				Object data = inputStream.readObject();
-				System.out.println("2");
 
 				// If a node is received
 				if (data instanceof BinaryNode)
 				{
 					// Must have received a node, read it in
-					String fam = (String) inputStream.readObject();
-					System.out.println("3");
-					HeadMachineReceive.addNode(outputStream, (BinaryNode) data, fam);
+					HeadMachineReceive.addNode(outputStream, (BinaryNode) data, (String) inputStream.readObject());
 				}
 
-				// If it's any other object, send back an error
+				// If it's any other object, see what it is
 				else
 				{
-					HeadMachineSend.error(outputStream);
+					System.out.println(data);
 				}
 			}
 		}
@@ -431,6 +302,115 @@ class HeadMachineListener extends Thread
 		catch(Exception e)
 		{
 			// Just exit quietly...
+		}
+	}
+}
+
+class HeadMachineSender extends Thread
+{
+	// The input file name
+	String input;
+
+	// The family name
+	String family;
+
+	// Constructor HeadMachineListener
+	HeadMachineSender(String input, String family)
+	{
+		this.input = input;
+		this.family = family;
+	}
+
+	public void run()
+	{
+		// Create a new file for the input
+		File inputFile = new File(input);
+
+		// Used to check whether a family already exists
+		FamilyNode append = null;
+
+		// Get input file list
+		ArrayList<File> binaries;
+
+		// See whether the family already exists
+		append = null;
+
+		// Add the family to the graph
+		try
+		{
+			// Checks if the input is a directory
+			if (inputFile.isDirectory())
+			{
+				binaries = new ArrayList<File>(Arrays.asList(inputFile.listFiles()));
+			}
+
+
+			// Else check if it is a file
+			else if (inputFile.exists())
+			{
+				binaries = new ArrayList<File>();
+				binaries.add(inputFile);
+			}
+
+			// Else the file doesn't exist
+			else
+			{
+				System.out.println("File does not exist!");
+				return;
+			}
+
+			// Check if the family is unknown
+			if(!family.equals("unknown"))
+			{
+				// For each FamilyNode in the graph, check if the family we are adding already exists
+				for(FamilyNode node : HeadMachine.graph.nodes)
+				{
+					if (node.name.equals(family))
+					{
+						append = node;
+						break;
+					}
+				}
+
+				// If the family does not already exist, create a new one
+				if (append == null)
+				{
+					// Create the new family node
+					append = new FamilyNode(family);
+
+					// Add the family node to the family list
+					Graph.addFamily(append);
+				}
+
+				// The the family value
+				family = append.name;
+			}
+
+			// Send binaries to analysis machines
+			while (binaries.size() != 0)
+			{
+				TimeUnit.SECONDS.sleep(1);
+				// Check if there is a socket available to send to 
+				if (HeadMachine.availableSockets.size() != 0)
+				{
+					ObjectOutputStream send_socket = HeadMachine.availableSockets.get(0);
+					File send_binary = binaries.get(0);
+
+					// Make sure we actually got a socket and a file
+					if(send_binary != null && send_socket != null)
+					{
+						HeadMachine.availableSockets.remove(0);
+						binaries.remove(0);
+						HeadMachineSend.sendBinary(send_socket, send_binary, family);
+					}
+				}
+			}
+		}
+
+		// Some exception has occurred
+		catch (Exception e)
+		{
+			System.out.println(e);
 		}
 	}
 }
