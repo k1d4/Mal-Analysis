@@ -80,6 +80,9 @@ public class HeadMachine
 				// Do heavy lifting
 				parseInput(in, select);
 			}
+
+			// Exit
+			System.exit(0);
 		}
 
 		// Print exception if one occurred
@@ -161,7 +164,7 @@ public class HeadMachine
 						append = new FamilyNode(family);
 
 						// Add the family node to the family list
-						graph.nodes.add(append);
+						Graph.addFamily(append);
 					}
 
 					// Send to available machine
@@ -256,6 +259,7 @@ public class HeadMachine
 						// Iterate over the sample edges
 						for(BinaryEdge k : j.edges)
 						{
+							// Make sure its not the same node
 							System.out.println("\t\t" + k.dest.name);
 							System.out.println("\t\t" + k.similarity);
 							System.out.println("\n");
@@ -335,6 +339,9 @@ class HeadMachineListener extends Thread
 		{
 			System.out.println(e);
 		}
+
+		// Print connection status
+		System.out.println("Connected to " + socket);
 	}
 
 	/**
@@ -362,6 +369,7 @@ class HeadMachineListener extends Thread
 					{
 						// Just send a heartbeat back
 						case "HEARTBEAT": HeadMachineSend.heartbeat(outputStream);
+						break;
 
 						// Send an error, unknown string
 						default: HeadMachineSend.error(outputStream);
@@ -380,9 +388,6 @@ class HeadMachineListener extends Thread
 				{
 					HeadMachineSend.error(outputStream);
 				}
-
-				// Status message
-				System.out.println("Something has occurred!");
 			}
 		}
     		

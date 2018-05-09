@@ -19,6 +19,9 @@ public class HeadMachineReceive
 {
 	public static void addNode(ObjectOutputStream conn, BinaryNode node, String family)
 	{
+		// Just to make sure things are working
+		System.out.println("Received " + node.name + " of " + family + ".");
+
 		// Free the machine for analysis of anther binary
 		HeadMachine.availableSockets.add(conn);
 
@@ -49,7 +52,7 @@ public class HeadMachineReceive
 				}
 			}
 
-			// If family is still uknown, we have to add the node to the unknown list
+			// If family is still unknown, we have to add the node to the unknown list
 			if(test == null)
 			{
 				Graph.unknown.add(node);

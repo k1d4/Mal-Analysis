@@ -14,7 +14,7 @@ class Graph implements Serializable
 	static final double EDGE_SIMILARITY_THRESHOLD = 25;
 
 	// The size of the filter used to hash the malware
-	static final int FILTER_SIZE = (int) Math.pow(2, 20);
+	static final int FILTER_SIZE = (int) Math.pow(2, 24);
 
 	// The window size used for the hash
 	static final int WINDOW_SIZE = 8;
@@ -83,7 +83,7 @@ class Graph implements Serializable
 			int index = ByteBuffer.wrap(trunc).getInt();
 
 			// Truncate to 24 bit value
-			index = index & 0x000FFFFF;
+			index = index & 0x00FFFFFF;
 
 			// Set index in filter
 			filter.set(index);
@@ -142,34 +142,6 @@ class Graph implements Serializable
 		return edges;
 	}
 
-	// Create the edges for a family
-	static ArrayList<FamilyEdge> familyEdges(FamilyNode source)
-	{
-		// Create new arraylist
-		ArrayList<FamilyEdge> edges = new ArrayList<FamilyEdge>();
-
-		// Iterate over the nodes already in the graph
-		for(FamilyNode dest : nodes)
-		{
-			try
-			{
-				// Create a new family edge
-				FamilyEdge newEdge = new FamilyEdge(dest);
-
-				// Set the similarity score
-				newEdge.similarity = Graph.filterCompare(source.filter, dest.filter);
-			}
-
-			catch(Exception e)
-			{
-				System.out.println(e);
-			}
-		}
-
-		// Return the list of edges
-		return edges;
-	}
-
 	// Do a comparision against each composite from each family, check the threshold
 	static FamilyNode familyCheck(BinaryNode node) throws Exception
 	{
@@ -191,9 +163,6 @@ class Graph implements Serializable
 	// Add a binary to a family
 	static void familyAddBinary(FamilyNode family, BinaryNode node)
 	{
-		// Add the binary to the BinaryNode list
-		family.binaries.add(node);
-
 		// Add the Binary to the family filter
 		family.filter.or(node.filter);
 
@@ -213,8 +182,29 @@ class Graph implements Serializable
 			edge.dest.edges.add(newEdge);
 		}
 
+		// Add the binary to the BinaryNode list
+		family.binaries.add(node);
+
 		// Update family similarity
 		updateFamilyEdges(family);
+	}
+
+	// Add the family to the graph
+	static void addFamily(FamilyNode family)
+	{
+		// Create an edge for each family
+		for(FamilyNode node : nodes)
+		{
+			// Create two edges, add them to their respective families
+			FamilyEdge dest = new FamilyEdge(node);
+			family.edges.add(dest);
+
+			FamilyEdge source = new FamilyEdge(family);
+			node.edges.add(source);
+		}
+
+		// Add the family to the list
+		nodes.add(family);
 	}
 
 	static void updateFamilyEdges(FamilyNode family)
@@ -224,6 +214,15 @@ class Graph implements Serializable
 		{
 			// Update the edges similarity score
 			edge.similarity = filterCompare(family.filter, edge.dest.filter);
+
+			for(FamilyEdge symmetric : edge.dest.edges)
+			{
+				if (symmetric.dest == family)
+				{
+					symmetric.similarity = edge.similarity;
+					break;
+				}
+			}
 		}
 	}
 

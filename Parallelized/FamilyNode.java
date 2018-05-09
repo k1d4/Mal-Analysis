@@ -21,5 +21,14 @@ class FamilyNode implements Serializable
 	{
 		// Set the name for the family
 		this.name = name;
+
+		// Create a blank filter for the family
+		this.filter = new BitSet(Graph.FILTER_SIZE);
+
+		// Edges to the other families
+		edges = new ArrayList<FamilyEdge>();
+
+		// The binaries associated with the family
+		binaries = new ArrayList<BinaryNode>();
 	}
 }

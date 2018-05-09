@@ -76,6 +76,9 @@ class AnalysisHandler extends Thread
 		{
 			System.out.println(e);
 		}
+
+			// Print connection status
+		System.out.println("Connected to " + socket);
 	}
 
 	// Run the newly forked thread
@@ -96,6 +99,7 @@ class AnalysisHandler extends Thread
 					{
 						// Just send a heartbeat back
 						case "HEARTBEAT": AnalysisMachineSend.heartbeat(this.outputStream);
+						break;
 
 						// Send an error, unknown string
 						default: AnalysisMachineSend.error(this.outputStream);

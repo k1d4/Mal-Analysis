@@ -22,6 +22,9 @@ public abstract class HeadMachineSend
 			// Send the file name and family name
 			outputStream.writeObject(binary.toString() + "%" + family);
 			outputStream.flush();
+
+			// Just to make sure things are working
+			System.out.println("Sent " + binary + " of family " + family + ".");
 		}
 
 		// Print exception
@@ -43,6 +46,9 @@ public abstract class HeadMachineSend
 			// Send back the heartbeat
 			outputStream.writeObject("HEARTBEAT");
 			outputStream.flush();
+
+			// Just to make sure things are working
+			System.out.println("Sent heartbeat.");
 		}
 
 		// Something Failed
@@ -61,6 +67,9 @@ public abstract class HeadMachineSend
 			// Send back the heartbeat
 			outputStream.writeObject("ERROR-MESSAGE");
 			outputStream.flush();
+
+			// Just to make sure things are working
+			System.out.println("Sent error.");
 		}
 
 		// Something Failed

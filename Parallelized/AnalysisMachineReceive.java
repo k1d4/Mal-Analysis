@@ -12,11 +12,17 @@ public class AnalysisMachineReceive
 	// Take in the file to analyze, run it through RetDec
 	public static void fileAnalysis(ObjectOutputStream outputStream, byte [] data, String fileName)
 	{
+		// Get the familyname from the fileName
+		String [] parts = fileName.split("%");
+
+		// Just to make sure things are working
+		System.out.println("Received " + parts[0] + " of family " + parts[1] + ".");
+
 		// String filename for the file
-		String name = Graph.uniqueID(fileName);
+		String name = Graph.uniqueID(parts[0]);
 
 		// Create a file at that path
-		File binary = new File(AnalysisMachine.directory + "/" + Graph.uniqueID(fileName));
+		File binary = new File(AnalysisMachine.directory + "/" + Graph.uniqueID(parts[0]));
 
 		// Creating a new node for the graph
 		BinaryNode newNode = null;
@@ -39,7 +45,7 @@ public class AnalysisMachineReceive
 		}
 
 		// Send the node back to the Head Machine
-		AnalysisMachineSend.sendBinaryNode(outputStream, newNode);
+		AnalysisMachineSend.sendBinaryNode(outputStream, newNode, parts[1]);
 	}
 
 	// Uses RetDec to deobfuscate a file
@@ -75,19 +81,7 @@ public class AnalysisMachineReceive
         	p.waitFor();
 
         	// Read the output file into an arraylist
-			Scanner scan = null;
-
-			// Initialize IO
-			try
-			{
-				scan = new Scanner(new BufferedReader(new FileReader(AnalysisMachine.directory + "/" + inFile.toString() + ".py")));
-			}
-
-			// Some IO exception occurred, close files
-			catch(Exception e)
-			{
-				System.out.println(e);
-			}
+			Scanner scan = new Scanner(new BufferedReader(new FileReader(AnalysisMachine.directory + "/" + inFile.toString() + ".py")));
 
 			while(scan.hasNext())
 			{

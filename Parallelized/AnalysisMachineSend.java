@@ -6,13 +6,20 @@ import java.util.concurrent.*;
 // Methods for sending data back to the HeadMachine
 public class AnalysisMachineSend
 {
-	public static void sendBinaryNode(ObjectOutputStream outputStream, BinaryNode node)
+	public static void sendBinaryNode(ObjectOutputStream outputStream, BinaryNode node, String family)
 	{
 		try
 		{
 			// Send back the binary node
 			outputStream.writeObject(node);
 			outputStream.flush();
+
+			// Send back the family name
+			outputStream.writeObject(family);
+			outputStream.flush();
+
+			// Just to make sure things are working
+			System.out.println("Sent node, part of " + family + ".");
 		}
 
 		// Print exception
@@ -30,6 +37,9 @@ public class AnalysisMachineSend
 			// Send back the heartbeat
 			outputStream.writeObject("HEARTBEAT");
 			outputStream.flush();
+
+			// Just to make sure things are working
+			System.out.println("Sent heartbeat.");
 		}
 
 		// Something Failed
@@ -47,6 +57,9 @@ public class AnalysisMachineSend
 			// Send back the heartbeat
 			outputStream.writeObject("ERROR-MESSAGE");
 			outputStream.flush();
+
+			// Just to make sure things are working
+			System.out.println("Sent error.");
 		}
 
 		// Something Failed
