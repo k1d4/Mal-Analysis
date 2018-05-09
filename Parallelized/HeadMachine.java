@@ -16,18 +16,6 @@ public class HeadMachine
 	// The graph that is created to represent our ecosystem.
 	static Graph graph = new Graph();
 
-	// Get input file list
-	static ArrayList<File> samples;
-
-	// Used to check whether a family already exists
-	static FamilyNode append = null;
-
-	// Check if adding family or unknown sample
-	static String binaryType = null;
-
-	// Testing code
-	static ArrayList<BinaryNode> testing = new ArrayList<BinaryNode>();
-
 	public static void main(String [] args)
 	{
 		// Check for the correct arguments
@@ -67,12 +55,10 @@ public class HeadMachine
 				// Ask the user for input
 				System.out.println("Select an option:");
 				System.out.println("\t0. Exit");
-				System.out.println("\t1. Load graph");
-				System.out.println("\t2. Save graph");
-				System.out.println("\t3. Add family to graph");
-				System.out.println("\t4. Add unknown samples");
-				System.out.println("\t5. Print graph");
-				System.out.println("\t6. Add analysis machine");
+				System.out.println("\t1. Add family to graph");
+				System.out.println("\t2. Add unknown binaries");
+				System.out.println("\t3. Print graph");
+				System.out.println("\t4. Add analysis machine");
 
 				// Get which option the user wants
 				try
@@ -92,19 +78,7 @@ public class HeadMachine
 				}
 
 				// Do heavy lifting
-				parseInput(select);
-
-				// Need to do something better than this
-				switch(select)
-				{
-					case 3: case 4: case 6:
-						// Wait on the child
-						synchronized(listener)
-						{
-							listener.wait();
-						}
-					default:
-				}
+				parseInput(in, select);
 			}
 		}
 
@@ -116,57 +90,27 @@ public class HeadMachine
 	}
 
     // Handle input from user and send tasks to analysis machines
-	public static void parseInput(int select)
+	public static void parseInput(Scanner in, int select)
 	{
-		// Scanner used to get input from the user
-		Scanner in = new Scanner(System.in);
-		String input = "";
+		// Used to check whether a family already exists
+		FamilyNode append = null;
+
+		// Get input file list
+		ArrayList<File> binaries;
+
+		String input;
 		File inputFile;
 
 		// Switch on the users selection
 		switch(select)
 		{
-			// Load a saved graph
-			case 1:
-
-				// try
-				// {
-				// 	// Get the saved file name from the user
-				// 	System.out.print("Name of saved graph: ");
-				// 	input = in.next();
-				// 	graph = Graph.loadGraph(input);
-				// }
-
-				// catch (Exception e)
-				// {
-				// 	e.printStackTrace();
-				// }
-
-				break;
-
-			// Save the graph to a file
-			case 2:
-				// try
-				// {
-				// 	// Get the saved name file
-				// 	System.out.print("Name of file: ");
-				// 	input = in.next();
-				// 	graph.saveGraph(input, graph);
-				// }
-				// catch (Exception e)
-				// {
-				// 	e.printStackTrace();
-				// }
-
-				break;
-
 			// Get a malware family from the user
-			// distributed function
-			case 3:
-				binaryType = "family";
+			case 1:
 
 				// Get the malware family directory
 				System.out.print("Input Directory: ");
+
+				// Gets the input directory
 				input = in.next();
 				inputFile = new File(input);
 
@@ -174,6 +118,7 @@ public class HeadMachine
 				System.out.print("Family: ");
 				String family = in.next();
 
+				// See whether the family already exists
 				append = null;
 
 				// Add the family to the graph
@@ -182,62 +127,65 @@ public class HeadMachine
 					// Checks if the input is a directory
 					if (inputFile.isDirectory())
 					{
-						samples = new ArrayList<File>(Arrays.asList(inputFile.listFiles()));
+						binaries = new ArrayList<File>(Arrays.asList(inputFile.listFiles()));
 					}
 
 					// Else check if it is a file
 					else if (inputFile.exists())
 					{
-						samples = new ArrayList<File>();
-						samples.add(inputFile);
+						binaries = new ArrayList<File>();
+						binaries.add(inputFile);
 					}
 
-					// Else it doesn't exist
+					// Else the file doesn't exist
 					else
 					{
-						System.out.println("File does not exist");
+						System.out.println("File does not exist!");
 						return;
 					}
 
 					// For each FamilyNode in the graph, check if the Family we are adding already exists
-					for(FamilyNode i : graph.nodes)
+					for(FamilyNode node : graph.nodes)
 					{
-						if (i.name.equals(family))
+						if (node.name.equals(family))
 						{
-							append = i;
+							append = node;
 							break;
 						}
 					}
 
-
 					// If the family does not already exist, create a new one
 					if (append == null)
 					{
+						// Create the new family node
 						append = new FamilyNode(family);
-						// append.edges = Graph.familyEdges(append);
+
+						// Add the family node to the family list
 						graph.nodes.add(append);
 					}
 
 					// Send to available machine
-					while (samples.size() != 0)
+					while (binaries.size() != 0)
 					{
 						if (availableSockets.size() != 0)
 						{
 							ObjectOutputStream send_socket = availableSockets.remove(0);
-							File send_sample = samples.remove(0);
-							HeadMachineSend.sendBinary(send_socket, send_sample);
+							File send_sample = binaries.remove(0);
+							HeadMachineSend.sendBinary(send_socket, send_sample, append.name);
 						}
 					}
 				}
+
+				// Some exception has occurred
 				catch (Exception e)
 				{
 					System.out.println(e);
 				}
+
 				break;
 
 			// Add unknown files
-			case 4:
-				binaryType = "unknown";
+			case 2:
 
 				System.out.print("Input Binary Path: ");
 				input = in.next();
@@ -250,8 +198,8 @@ public class HeadMachine
 					// Check if the file to be added exists
 					if (inputFile.exists())
 					{
-						samples = new ArrayList<File>();
-						samples.add(inputFile);
+						binaries = new ArrayList<File>();
+						binaries.add(inputFile);
 					}
 
 					// The file doesn't exist
@@ -261,18 +209,19 @@ public class HeadMachine
 						return;
 					}
 
-					while (samples.size() != 0)
+					// Send the sample to an available machine
+					while (binaries.size() != 0)
 					{
 						if (availableSockets.size() != 0)
 						{
-							ObjectOutputStream send_socket = availableSockets.get(0);
-							File send_sample = samples.get(0);
-							HeadMachineSend.sendBinary(send_socket, send_sample);
-							availableSockets.remove(send_socket);
-							samples.remove(send_sample);
+							ObjectOutputStream send_socket = availableSockets.remove(0);
+							File send_sample = binaries.remove(0);
+							HeadMachineSend.sendBinary(send_socket, send_sample, "unknown");
 						}
 					}
 				}
+
+				// Catch an error if it occurred
 				catch (Exception e)
 				{
 					System.out.println(e);
@@ -281,7 +230,7 @@ public class HeadMachine
 				break;
 
 			// Print out the graph
-			case 5:
+			case 3:
 
 				// Iterate over each family node
 				for(FamilyNode i : graph.nodes)
@@ -300,7 +249,7 @@ public class HeadMachine
 					System.out.print("\n\n");
 
 					// Iterate over the Sample Nodes
-					for(BinaryNode j : i.samples)
+					for(BinaryNode j : i.binaries)
 					{
 						System.out.println("\t" + j.name);
 
@@ -318,9 +267,9 @@ public class HeadMachine
 
 				break;
 
-			case 6:
-			// Presumably sets up another server
-			// Get the host and port
+			case 4:
+				// Presumably sets up another server
+				// Get the host and port
 				System.out.print("Input Host: ");
 				String host = in.next();
 				System.out.print("Input Port: ");
@@ -328,11 +277,12 @@ public class HeadMachine
 
 				try
 				{
+					// Get the socket, then create the outputstreams
 					Socket socket = new Socket(InetAddress.getByName(host), port);
 					onlineSockets.add(new ObjectOutputStream(socket.getOutputStream()));
 					availableSockets.add(new ObjectOutputStream(socket.getOutputStream()));
 
-					// Fork the listener
+					// Create and start the new listener
 					HeadMachineListener listener = new HeadMachineListener(socket);
 					listener.start();
 				}
@@ -344,6 +294,9 @@ public class HeadMachine
 				}
 
 				break;
+
+			// If the user enters anything else, just exit
+			default: break;
 		}
 	}
 }
@@ -415,9 +368,11 @@ class HeadMachineListener extends Thread
 					}
 				}
 
+				// If a node is received
 				else if (data instanceof BinaryNode)
 				{
-					HeadMachineReceive.addNode(outputStream, (BinaryNode) data);
+					// Must have received a node, read it in
+					HeadMachineReceive.addNode(outputStream, (BinaryNode) data, (String) inputStream.readObject());
 				}
 
 				// If it's any other object, send back an error
@@ -426,10 +381,8 @@ class HeadMachineListener extends Thread
 					HeadMachineSend.error(outputStream);
 				}
 
-				synchronized(this)
-				{
-					this.notify();
-				}
+				// Status message
+				System.out.println("Something has occurred!");
 			}
 		}
     		

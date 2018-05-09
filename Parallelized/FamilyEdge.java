@@ -7,18 +7,15 @@ class FamilyEdge implements Serializable
 	// Family dest node
 	FamilyNode dest;
 
-	// The saving of the code
-	String codeID;
-
 	// Percentage similarity
 	double similarity;
 	
-	FamilyEdge(FamilyNode dest) throws Exception
+	FamilyEdge(FamilyNode dest)
 	{
 		// The dest FamilyNode for this edge
 		this.dest = dest;
 
-		// Save and load from disk
+		// the similarity score between families
 		this.similarity = -1;
 	}
 }

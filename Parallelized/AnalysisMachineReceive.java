@@ -12,12 +12,13 @@ public class AnalysisMachineReceive
 	// Take in the file to analyze, run it through RetDec
 	public static void fileAnalysis(ObjectOutputStream outputStream, byte [] data, String fileName)
 	{
-		// String path for the file
-		String path = Graph.uniqueID(fileName);
+		// String filename for the file
+		String name = Graph.uniqueID(fileName);
 
 		// Create a file at that path
-		File binary = new File(path);
+		File binary = new File(AnalysisMachine.directory + "/" + Graph.uniqueID(fileName));
 
+		// Creating a new node for the graph
 		BinaryNode newNode = null;
 
 		try
@@ -26,7 +27,7 @@ public class AnalysisMachineReceive
 			Files.write(binary.toPath(), data);
 
 			// Run the file through RetDec
-			ArrayList<String> decompiledCode = decompile(binary);
+			ArrayList<String> decompiledCode = decompile(new File(name));
 
 			// Create a binary node based upon that new file
 			newNode = new BinaryNode(decompiledCode);
@@ -56,10 +57,13 @@ public class AnalysisMachineReceive
 		try
 		{
 			// Create log file
-			File log = new File("Log.txt");
+			File log = new File(AnalysisMachine.directory + "/Log.txt");
 
 			// Call retdec-decompiler.sh on the file
 			ProcessBuilder builder = new ProcessBuilder("retdec-decompiler.sh", "-l", "py", inFile.toString());
+
+			// Change the directory of the process
+			builder.directory(AnalysisMachine.directory);
 
 			// Output to the log file
 			builder.redirectOutput(log);
@@ -76,7 +80,7 @@ public class AnalysisMachineReceive
 			// Initialize IO
 			try
 			{
-				scan = new Scanner(new BufferedReader(new FileReader(inFile.toString() + ".py")));
+				scan = new Scanner(new BufferedReader(new FileReader(AnalysisMachine.directory + "/" + inFile.toString() + ".py")));
 			}
 
 			// Some IO exception occurred, close files

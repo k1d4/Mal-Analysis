@@ -7,8 +7,8 @@ import java.nio.*;
 // Code to be ran on the analysis machine
 public class AnalysisMachine
 {
-	// Used for locking RetDec
-	static Semaphore lock = new Semaphore(1);
+	// Create a directory where all the files will be stored
+	static File directory = new File("AnalysisMachine");
 
 	public static void main(String [] args)
 	{
@@ -22,14 +22,22 @@ public class AnalysisMachine
 		// Get port number from user
 		int port = Integer.parseInt(args[0]);
 
+		// Make the directory a directory
+		directory.mkdir();
+
 		// Create socket port and fork threads for the HeadMachine Request
 		try
 		{
+			// Create a new server socket waiting on the specified port
 			ServerSocket AnalysisMachine = new ServerSocket(port);
 
+			// Continually loop
 			while(true)
 			{
+				// Accept the connection
 				Socket HeadMachine = AnalysisMachine.accept();
+
+				// Create and start the handler thread
 				AnalysisHandler handler = new AnalysisHandler(HeadMachine);
 				handler.start();
 			}
@@ -46,7 +54,7 @@ public class AnalysisMachine
 // Handler that is spawned when request is received
 class AnalysisHandler extends Thread
 {
-	// Need the new socket
+	// The socket, input and output streams used for the connection
 	Socket socket;
 	ObjectOutputStream outputStream;
 	ObjectInputStream inputStream;
@@ -54,10 +62,12 @@ class AnalysisHandler extends Thread
 	// Constructor for HeadMachineHandler
 	AnalysisHandler(Socket socket)
 	{
+		// Set the socket for the thread
 		this.socket = socket;
 
 		try
 		{
+			// Create the input and output stream, make sure output created first!
 			outputStream = new ObjectOutputStream(socket.getOutputStream());
 			inputStream = new ObjectInputStream(socket.getInputStream());
 		}
@@ -76,14 +86,12 @@ class AnalysisHandler extends Thread
 		{
 			while(true)
 			{
-				// Create an ObjectInputStream and read an object from it
+				// Read an object from the input stream
 				Object data = inputStream.readObject();
-				
 
-				// Check if the data is a string
+				// Check if the read data is a string
 				if(data instanceof String)
 				{
-		
 					switch((String) data)
 					{
 						// Just send a heartbeat back
@@ -97,16 +105,13 @@ class AnalysisHandler extends Thread
 				// If it is a file, then analyze it
 				else if (data instanceof byte[])
 				{
-	
-					// Read the following name, and send if to file analysis
-					String fileName = (String) inputStream.readObject();
-					AnalysisMachineReceive.fileAnalysis(this.outputStream, (byte[]) data, fileName);
+					// Read in the filename then analyze
+					AnalysisMachineReceive.fileAnalysis(this.outputStream, (byte[]) data, (String) inputStream.readObject());
 				}
 
 				// If it's any other object, send back an error
 				else
 				{
-	
 					AnalysisMachineSend.error(this.outputStream);
 				}
 			}

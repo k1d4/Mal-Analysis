@@ -8,18 +8,19 @@ import java.util.regex.*;
 public abstract class HeadMachineSend
 {
 
-	public static void sendBinary(ObjectOutputStream outputStream, File sample)
+	public static void sendBinary(ObjectOutputStream outputStream, File binary, String family)
 	{
 		try
 		{
-			byte[] data = Files.readAllBytes(sample.toPath());
+			// Get the byte array from the binary
+			byte[] data = Files.readAllBytes(binary.toPath());
 
 			// Send send the file
 			outputStream.writeObject(data);
 			outputStream.flush();
 
-			// Send the file name
-			outputStream.writeObject(sample.toString());
+			// Send the file name and family name
+			outputStream.writeObject(binary.toString() + "%" + family);
 			outputStream.flush();
 		}
 

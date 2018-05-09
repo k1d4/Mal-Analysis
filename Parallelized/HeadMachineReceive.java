@@ -17,54 +17,56 @@ import java.io.*;
  */
 public class HeadMachineReceive
 {
-	public static void addNode(ObjectOutputStream conn, BinaryNode node)
+	public static void addNode(ObjectOutputStream conn, BinaryNode node, String family)
 	{
-		// Free socket for other binaries
+		// Free the machine for analysis of anther binary
 		HeadMachine.availableSockets.add(conn);
 
-		for(String x : node.code)
-		{
-			System.out.println(x);
-		}
+		// Testing which family the node is a part of
+		FamilyNode test = null;
 
-		HeadMachine.testing.add(node);
-
-		for(BinaryNode x : HeadMachine.testing)
+		try
 		{
-			for(BinaryNode y : HeadMachine.testing)
+			// Check if the family is unknown
+			if(family.equals("unknown"))
 			{
-				System.out.println(x.name + "-" + y.name + "-" + Graph.filterCompare(x.filter, y.filter));
+				test = Graph.familyCheck(node);
+			}
+
+			// if the family is not unknown
+			else
+			{
+				// Find the family associated with the name
+				for(FamilyNode famNode : Graph.nodes)
+				{
+					// If we have found the correct node
+					if(famNode.name.equals(family))
+					{
+						// Set test to this family node
+						test = famNode;
+						break;
+					}
+				}
+			}
+
+			// If family is still uknown, we have to add the node to the unknown list
+			if(test == null)
+			{
+				Graph.unknown.add(node);
+			}
+
+			// Else add the node to the family
+			else
+			{
+				Graph.familyAddBinary(test, node);
 			}
 		}
 
-		// try
-		// {
-		// 	SampleNode newNode = new SampleNode(node.code, node.filter);
-			
-		// 	if (HeadMachine.binaryType.equals("unknown"))
-		// 	{
-		// 		// Check what family the newNode is most similar to
-		// 		HeadMachine.append = Graph.familyCheck(newNode);
-		// 	}
-
-		// 	if(HeadMachine.append != null)
-		// 	{
-		// 		newNode.edges = Graph.sampleEdges(newNode, HeadMachine.append);
-		// 		HeadMachine.append.samples.add(newNode);
-		// 		HeadMachine.graph.updateFamily(HeadMachine.append);
-		// 		HeadMachine.graph.updateFamilyEdges(HeadMachine.append);
-		// 	}
-		// 	else
-		// 	{
-		// 		HeadMachine.graph.unknown.add(newNode);
-		// 	}
-		// }
-
-		// // Print exception
-		// catch(Exception e)
-		// {
-		// 	System.out.println(e);
-		// }
+		// Print exception
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
 	}
 
 	public static void generalFailure(ObjectOutputStream conn, byte [] buffer)
