@@ -149,10 +149,10 @@ public class AnalysisMachineReceive
 			scan.close();
 		}
 
-		// Print exception if unable to objdump
+		// Print exception if unable to retdec
 		catch(Exception e)
 		{
-			e.printStackTrace();
+			System.out.println(e);
 		}
 
 		// Return the created file

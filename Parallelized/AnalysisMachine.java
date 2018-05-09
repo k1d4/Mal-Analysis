@@ -77,8 +77,8 @@ class AnalysisHandler extends Thread
 			System.out.println(e);
 		}
 
-			// Print connection status
-		System.out.println("Connected to " + socket);
+		// Print connection status
+		System.out.println(socket);
 	}
 
 	// Run the newly forked thread

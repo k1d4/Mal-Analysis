@@ -25,13 +25,13 @@ public class HeadMachineReceive
 		try
 		{
 			// Release the lock
-			Graph.lock.acquire();
+			// Graph.lock.acquire();
 		}
 
+		// Locking Error
 		catch(Exception e)
 		{
 			System.out.println(e);
-			System.out.println("Locking Error!");
 		}
 
 		// Just to make sure things are working
@@ -87,7 +87,7 @@ public class HeadMachineReceive
 		}
 
 		// Release the lock
-		Graph.lock.release();
+		// Graph.lock.release();
 	}
 
 	public static void generalFailure(ObjectOutputStream conn, byte [] buffer)

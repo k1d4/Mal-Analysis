@@ -41,7 +41,8 @@ public class HeadMachine
 			// Add the analysis machine to the online sockets and available list
 			onlineSockets.add(listener.outputStream);
 
-			System.out.println("Added: " + socket);
+			// Add the socket to the available sockets
+			System.out.println(socket);
 			availableSockets.add(listener.outputStream);
 
 			// Start the listener
@@ -131,7 +132,7 @@ public class HeadMachine
 				try
 				{
 					// Release the lock
-					Graph.lock.acquire();
+					// Graph.lock.acquire();
 				}
 
 				catch(Exception e)
@@ -147,6 +148,7 @@ public class HeadMachine
 					{
 						binaries = new ArrayList<File>(Arrays.asList(inputFile.listFiles()));
 					}
+
 
 					// Else check if it is a file
 					else if (inputFile.exists())
@@ -182,14 +184,25 @@ public class HeadMachine
 						Graph.addFamily(append);
 					}
 
-					// Send to available machine
+					// Send binaries to analysis machines
 					while (binaries.size() != 0)
 					{
+						// FIX WITH LOCKING
+						TimeUnit.SECONDS.sleep(1);
+
+						// Check if there is a socket available to send to 
 						if (availableSockets.size() != 0)
 						{
-							ObjectOutputStream send_socket = availableSockets.remove(0);
-							File send_sample = binaries.remove(0);
-							HeadMachineSend.sendBinary(send_socket, send_sample, append.name);
+							ObjectOutputStream send_socket = availableSockets.get(0);
+							File send_sample = binaries.get(0);
+
+							// Make sure we actually got a socket and a file
+							if(send_sample != null && send_socket != null)
+							{
+								availableSockets.remove(0);
+								binaries.remove(0);
+								HeadMachineSend.sendBinary(send_socket, send_sample, "unknown");
+							}
 						}
 					}
 				}
@@ -201,7 +214,7 @@ public class HeadMachine
 				}
 
 				// Release the lock
-				Graph.lock.release();
+				// Graph.lock.release();
 
 				break;
 
@@ -233,11 +246,21 @@ public class HeadMachine
 					// Send the sample to an available machine
 					while (binaries.size() != 0)
 					{
+						TimeUnit.SECONDS.sleep(1);
+
+						// Check there is a socket available to send to
 						if (availableSockets.size() != 0)
 						{
-							ObjectOutputStream send_socket = availableSockets.remove(0);
-							File send_sample = binaries.remove(0);
-							HeadMachineSend.sendBinary(send_socket, send_sample, "unknown");
+							ObjectOutputStream send_socket = availableSockets.get(0);
+							File send_sample = binaries.get(0);
+
+							// Make sure we actually got a socket and a file
+							if(send_sample != null && send_socket != null)
+							{
+								availableSockets.remove(0);
+								binaries.remove(0);
+								HeadMachineSend.sendBinary(send_socket, send_sample, "unknown");
+							}
 						}
 					}
 				}
@@ -382,13 +405,17 @@ class HeadMachineListener extends Thread
 
 			while(true)
 			{
+				System.out.println("1");
 				Object data = inputStream.readObject();
+				System.out.println("2");
 
 				// If a node is received
 				if (data instanceof BinaryNode)
 				{
 					// Must have received a node, read it in
-					HeadMachineReceive.addNode(outputStream, (BinaryNode) data, (String) inputStream.readObject());
+					String fam = (String) inputStream.readObject();
+					System.out.println("3");
+					HeadMachineReceive.addNode(outputStream, (BinaryNode) data, fam);
 				}
 
 				// If it's any other object, send back an error
