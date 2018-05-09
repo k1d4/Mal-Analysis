@@ -17,6 +17,9 @@ public class HeadMachine
 	// The graph that is created to represent our ecosystem.
 	static Graph graph = new Graph();
 
+	// Just a big 'ole lock...
+	static Semaphore lock = new Semaphore(1);
+
 	public static void main(String [] args)
 	{
 		// Check for the correct arguments
@@ -152,38 +155,49 @@ public class HeadMachine
 			// Print out the graph
 			case 3:
 
-				// Iterate over each family node
-				for(FamilyNode i : graph.nodes)
+				// Might get a null pointer exception, it's okay! Just fail and try again
+				try
 				{
-					System.out.println(i.name);
-
-					System.out.print("\n\n");
-
-					// Iterate over family edges
-					for(FamilyEdge j : i.edges)
+					// Iterate over each family node
+					for(FamilyNode i : graph.nodes)
 					{
-						System.out.println("\t" + j.similarity);
-						System.out.println("\t" + j.dest.name);
-					}
+						System.out.println(i.name);
 
-					System.out.print("\n\n");
+						System.out.print("\n\n");
 
-					// Iterate over the Sample Nodes
-					for(BinaryNode j : i.binaries)
-					{
-						System.out.println("\t" + j.name);
-
-						// Iterate over the sample edges
-						for(BinaryEdge k : j.edges)
+						// Iterate over family edges
+						for(FamilyEdge j : i.edges)
 						{
-							// Make sure its not the same node
-							System.out.println("\t\t" + k.dest.name);
-							System.out.println("\t\t" + k.similarity);
-							System.out.println("\n");
+							System.out.println("\t" + j.similarity);
+							System.out.println("\t" + j.dest.name);
 						}
-					}
 
-					System.out.print("\n\n\n\n-----------------------------------------------");
+						System.out.print("\n\n");
+
+						// Iterate over the Sample Nodes
+						for(BinaryNode j : i.binaries)
+						{
+							System.out.println("\t" + j.name);
+
+							// Iterate over the sample edges
+							for(BinaryEdge k : j.edges)
+							{
+								// Make sure its not the same node
+								System.out.println("\t\t" + k.dest.name);
+								System.out.println("\t\t" + k.similarity);
+								System.out.println("\n");
+							}
+						}
+
+						System.out.print("\n\n\n\n-----------------------------------------------");
+					}
+				}
+
+				// If a null pointer occurs
+				catch(Exception e)
+				{
+					System.out.println(e);
+					break;
 				}
 
 				break;
@@ -203,9 +217,15 @@ public class HeadMachine
 					// Create and start the new listener
 					HeadMachineListener listener = new HeadMachineListener(socket);
 
+					// Acquire the big 'ole lock
+					lock.acquire();
+
 					// Add the analysis machine to the online sockets and available list
 					onlineSockets.add(listener.outputStream);
 					availableSockets.add(listener.outputStream);
+
+					// Release the big 'ole lock
+					lock.release();
 
 					// Start the listener
 					listener.start();
@@ -389,20 +409,38 @@ class HeadMachineSender extends Thread
 			// Send binaries to analysis machines
 			while (binaries.size() != 0)
 			{
-				TimeUnit.SECONDS.sleep(1);
-				// Check if there is a socket available to send to 
+				// Acquire the big 'ole lock
+				HeadMachine.lock.acquire();
+
 				if (HeadMachine.availableSockets.size() != 0)
 				{
+					// Get an available socket
 					ObjectOutputStream send_socket = HeadMachine.availableSockets.get(0);
+
+					// Get a binary
 					File send_binary = binaries.get(0);
 
 					// Make sure we actually got a socket and a file
 					if(send_binary != null && send_socket != null)
 					{
+						// Remove the socket from the list
 						HeadMachine.availableSockets.remove(0);
+
+						// Remove the binary from the list
 						binaries.remove(0);
+
+						// Send the binary to the analysis machine
 						HeadMachineSend.sendBinary(send_socket, send_binary, family);
+
+						// Release the big 'ole lock
+						HeadMachine.lock.release();
 					}
+				}
+
+				else
+				{
+					// Release the big 'ole lock
+					HeadMachine.lock.release();
 				}
 			}
 		}

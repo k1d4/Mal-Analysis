@@ -23,6 +23,18 @@ public class HeadMachineReceive
 		// Just to make sure things are working
 		System.out.println("Received " + node.name + ".");
 
+		try
+		{
+			// Acquire the big 'ole lock
+			HeadMachine.lock.acquire();
+		}
+
+		// Lock acquire failure
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
+
 		// Free the machine for analysis of anther binary
 		HeadMachine.availableSockets.add(conn);
 
@@ -64,6 +76,9 @@ public class HeadMachineReceive
 			{
 				Graph.familyAddBinary(test, node);
 			}
+
+			// Release the big 'ole lock
+			HeadMachine.lock.release();
 		}
 
 		// Print exception

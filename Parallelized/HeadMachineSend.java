@@ -34,8 +34,7 @@ public abstract class HeadMachineSend
 		}
 	}
 
-	// Send a heartbeat back to the AnalysisMachine
-	// We don't necessarily need this, but maybe we do
+	// Just in case an error occurs
 	public static void error(ObjectOutputStream outputStream)
 	{
 		try

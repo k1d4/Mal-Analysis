@@ -12,10 +12,10 @@ class Graph implements Serializable
 	static final int MIN_CODE_THRESHOLD = 8;
 
 	// The percentage similarity an edge must be for it to be considered within a family
-	static final double EDGE_SIMILARITY_THRESHOLD = 25;
+	static final double EDGE_SIMILARITY_THRESHOLD = 10;
 
 	// The size of the filter used to hash the malware
-	static final int FILTER_SIZE = (int) Math.pow(2, 24);
+	static final int FILTER_SIZE = (int) Math.pow(2, 28);
 
 	// The window size used for the hash
 	static final int WINDOW_SIZE = 8;
@@ -25,9 +25,6 @@ class Graph implements Serializable
 
 	// Unknown nodes in the graph
 	static ArrayList<BinaryNode> unknown;
-
-	// Lock for the graph, shouldn't be access by multiple threads at the same time
-	static Semaphore lock = new Semaphore(1);
 
 	// Constructor for the graph
 	Graph()
@@ -87,7 +84,7 @@ class Graph implements Serializable
 			int index = ByteBuffer.wrap(trunc).getInt();
 
 			// Truncate to 24 bit value
-			index = index & 0x00FFFFFF;
+			index = index & 0x0FFFFFFF;
 
 			// Set index in filter
 			filter.set(index);
@@ -153,7 +150,7 @@ class Graph implements Serializable
 		for(FamilyNode family : nodes)
 		{
 			// Compare the binary to the family node
-			if(filterCompare(node.filter, family.filter) >= 5.0)
+			if(filterCompare(node.filter, family.filter) >= EDGE_SIMILARITY_THRESHOLD)
 			{
 				// Family has been found!
 				return family;

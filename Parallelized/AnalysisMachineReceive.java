@@ -126,23 +126,23 @@ public class AnalysisMachineReceive
 					// If there is a part that is not a comment
 					if(outString.length() != 0)
 					{
-						// Generalize Functions
-						outString = outString.replaceAll("[a-zA-Z_0-9]+\\(", "func(");
+						// // Generalize Functions
+						// outString = outString.replaceAll("[a-zA-Z_0-9]+\\(", "func(");
 
-						// Generalize Globals 
-						outString = outString.replaceAll("g[0-9]+", "g");
+						// // Generalize Globals 
+						// outString = outString.replaceAll("g[0-9]+", "g");
 
-						// Generalize Arguments 
-						outString = outString.replaceAll("a[0-9]+", "a");
+						// // Generalize Arguments 
+						// outString = outString.replaceAll("a[0-9]+", "a");
 
-						// Generalize Struct Vars 
-						outString = outString.replaceAll("e[0-9]+", "e");
+						// // Generalize Struct Vars 
+						// outString = outString.replaceAll("e[0-9]+", "e");
 
-						// Generalize Local Vars 
-						outString = outString.replaceAll("v[0-9]+", "v");
+						// // Generalize Local Vars 
+						// outString = outString.replaceAll("v[0-9]+", "v");
 
-						// Remove whitespace
-						outString = outString.replaceAll("\\s", "");
+						// // Remove whitespace
+						// outString = outString.replaceAll("\\s", "");
 
 						if(outString.length() != 0)
 						{
