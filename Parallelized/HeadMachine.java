@@ -24,6 +24,9 @@ public class HeadMachine
 	{
 		if(args.length == 0)
 		{
+			// Make sure to initialize the graph
+			graph = new Graph(10, 28, 16);
+
 			try
 			{
 				// Scanner used to get input from the user
@@ -550,100 +553,98 @@ class HeadMachineSender extends Thread
 		// See whether the family already exists
 		append = null;
 
-		// Add the family to the graph
-		try
+		// Checks if the input is a directory
+		if (inputFile.isDirectory())
 		{
-			// Checks if the input is a directory
-			if (inputFile.isDirectory())
-			{
-				binaries = new ArrayList<File>(Arrays.asList(inputFile.listFiles()));
-			}
+			binaries = new ArrayList<File>(Arrays.asList(inputFile.listFiles()));
+		}
 
 
-			// Else check if it is a file
-			else if (inputFile.exists())
-			{
-				binaries = new ArrayList<File>();
-				binaries.add(inputFile);
-			}
+		// Else check if it is a file
+		else if (inputFile.exists())
+		{
+			binaries = new ArrayList<File>();
+			binaries.add(inputFile);
+		}
 
-			// Else the file doesn't exist
-			else
-			{
-				System.out.println("File does not exist!");
-				return;
-			}
+		// Else the file doesn't exist
+		else
+		{
+			System.out.println("File does not exist!");
+			return;
+		}
 
-			// Check if the family is unknown
-			if(!family.equals("unknown"))
+		// Check if the family is unknown
+		if(!family.equals("unknown"))
+		{
+			// For each FamilyNode in the graph, check if the family we are adding already exists
+			for(FamilyNode node : HeadMachine.graph.nodes)
 			{
-				// For each FamilyNode in the graph, check if the family we are adding already exists
-				for(FamilyNode node : HeadMachine.graph.nodes)
+				if (node.name.equals(family))
 				{
-					if (node.name.equals(family))
-					{
-						append = node;
-						break;
-					}
+					append = node;
+					break;
 				}
-
-				// If the family does not already exist, create a new one
-				if (append == null)
-				{
-					// Create the new family node
-					append = new FamilyNode(family);
-
-					// Add the family node to the family list
-					Graph.addFamily(append);
-				}
-
-				// The the family value
-				family = append.name;
 			}
 
-			// Send binaries to analysis machines
-			while (binaries.size() != 0)
+			// If the family does not already exist, create a new one
+			if (append == null)
+			{
+				// Create the new family node
+				append = new FamilyNode(family);
+
+				// Add the family node to the family list
+				Graph.addFamily(append);
+			}
+
+			// The the family value
+			family = append.name;
+		}
+
+		// Send binaries to analysis machines
+		while (binaries.size() != 0)
+		{
+			try
 			{
 				// Acquire the big 'ole lock
 				HeadMachine.lock.acquire();
+			}
 
-				if (HeadMachine.availableSockets.size() != 0)
+			catch(Exception e)
+			{
+				System.out.println(e);
+			}
+
+			if (HeadMachine.availableSockets.size() != 0)
+			{
+				// Get an available socket
+				ObjectOutputStream send_socket = HeadMachine.availableSockets.get(0);
+
+				// Get a binary
+				File send_binary = binaries.get(0);
+
+				// Make sure we actually got a socket and a file
+				if(send_binary != null && send_socket != null)
 				{
-					// Get an available socket
-					ObjectOutputStream send_socket = HeadMachine.availableSockets.get(0);
+					// Remove the socket from the list
+					HeadMachine.availableSockets.remove(0);
 
-					// Get a binary
-					File send_binary = binaries.get(0);
+					// Remove the binary from the list
+					binaries.remove(0);
 
-					// Make sure we actually got a socket and a file
-					if(send_binary != null && send_socket != null)
-					{
-						// Remove the socket from the list
-						HeadMachine.availableSockets.remove(0);
+					// Send the binary to the analysis machine
+					HeadMachineSend.sendBinary(send_socket, send_binary, family);
 
-						// Remove the binary from the list
-						binaries.remove(0);
-
-						// Send the binary to the analysis machine
-						HeadMachineSend.sendBinary(send_socket, send_binary, family);
-
-						// Release the big 'ole lock
-						HeadMachine.lock.release();
-					}
-				}
-
-				else
-				{
 					// Release the big 'ole lock
 					HeadMachine.lock.release();
 				}
 			}
-		}
 
-		// Some exception has occurred
-		catch (Exception e)
-		{
-			System.out.println(e);
+			else
+			{
+				// Release the big 'ole lock
+				HeadMachine.lock.release();
+			}
 		}
 	}
 }

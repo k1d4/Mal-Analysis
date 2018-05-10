@@ -55,6 +55,8 @@ class Graph implements Serializable
 			grams.add(gram);
 		}
 
+		System.out.println(grams.size());
+
 		// Initialize a binary array, size of 2^28
 		BitSet filter = new BitSet(FILTER_SIZE);
 
@@ -84,11 +86,17 @@ class Graph implements Serializable
 			int index = ByteBuffer.wrap(trunc).getInt();
 
 			// Truncate to 24 bit value
-			index = index & 0x00FFFFFF;
+			index = index & 0x0FFFFFFF;
+
+			System.out.println(i);
+
+			System.out.println(index);
 
 			// Set index in filter
 			filter.set(index);
 		}
+
+		System.out.println(filter.cardinality());
 
 		return filter;
 	}
@@ -107,6 +115,8 @@ class Graph implements Serializable
 
 		// Get the size of the intersection
 		double numerator = intersection.cardinality();
+
+		System.out.println(denominator + ": D + " + numerator + " : N");
 
 		// Return the percentage
 		return (denominator != 0) ? (numerator / denominator * 100.0) : 0;
