@@ -65,100 +65,102 @@ public class AnalysisMachineReceive
 		// Add the name of the input file
 		codeOutput.add(inFile.getName());
 
+		// Call retdec-decompiler.sh on the file
+		ProcessBuilder builder = new ProcessBuilder("retdec-decompiler.sh", "-l", "py", inFile.toString());
+
+		// Change the directory of the process
+		builder.directory(AnalysisMachine.directory);
+
+		// Output to parent process System.out
+		builder.inheritIO();
+
+		// Scanner used for parsing retdec output
+		Scanner scan = null;
+
 		try
 		{
-			// Call retdec-decompiler.sh on the file
-			ProcessBuilder builder = new ProcessBuilder("retdec-decompiler.sh", "-l", "py", inFile.toString());
-
-			// Change the directory of the process
-			builder.directory(AnalysisMachine.directory);
-
-			// Output to parent process System.out
-			builder.inheritIO();
-
 			// Start process
 			p = builder.start();
 
 			// Wait until thread has terminated
-        	p.waitFor();
+	    	p.waitFor();
 
-        	// Read the output file into an arraylist
-			Scanner scan = new Scanner(new BufferedReader(new FileReader(AnalysisMachine.directory + "/" + inFile.toString().substring(0, inFile.toString().lastIndexOf('.')) + ".py")));
-
-			while(scan.hasNext())
-			{
-				String nextLine = scan.nextLine();
-
-				if(nextLine.contains("- Functions -"))
-				{
-					break;
-				}
-			}
-
-			// Normalize input and write to output
-			while(scan.hasNext())
-			{
-				// Get next line
-				String nextLine = scan.nextLine();
-
-				if(nextLine.contains("- Dynamically Linked Functions -"))
-				{
-					break;
-				}
-
-				// Remove comments
-				String [] string_parsing = nextLine.split("#");
-
-				// If there are comments, remove the comment part
-				if(string_parsing.length != 0)
-				{
-					String outString = string_parsing[0];
-
-					// Don't add the line if it is just the definition of a global
-					if(outString.contains("global"))
-					{
-						continue;
-					}
-
-					// If there is a part that is not a comment
-					if(outString.length() != 0)
-					{
-						// Generalize Functions
-						outString = outString.replaceAll("[a-zA-Z_0-9]+\\(", "func(");
-
-						// Generalize Globals 
-						outString = outString.replaceAll("g[0-9]+", "g");
-
-						// Generalize Arguments 
-						outString = outString.replaceAll("a[0-9]+", "a");
-
-						// Generalize Struct Vars 
-						outString = outString.replaceAll("e[0-9]+", "e");
-
-						// Generalize Local Vars 
-						outString = outString.replaceAll("v[0-9]+", "v");
-
-						// Remove whitespace
-						outString = outString.replaceAll("\\s", "");
-
-						if(outString.length() != 0)
-						{
-							// Normalization occurs here
-							codeOutput.add(outString);
-						}
-					}
-				}
-			}
-
-			// Close the scanning on the retdec output
-			scan.close();
+	    	// Read the output file into an arraylist
+			scan = new Scanner(new BufferedReader(new FileReader(AnalysisMachine.directory + "/" + inFile.toString() + ".py")));
 		}
 
-		// Print exception if unable to retdec
 		catch(Exception e)
 		{
 			System.out.println(e);
 		}
+
+		while(scan.hasNext())
+		{
+			String nextLine = scan.nextLine();
+
+			if(nextLine.contains("- Functions -"))
+			{
+				break;
+			}
+		}
+
+		// Normalize input and write to output
+		while(scan.hasNext())
+		{
+			// Get next line
+			String nextLine = scan.nextLine();
+
+			if(nextLine.contains("- Dynamically Linked Functions -"))
+			{
+				break;
+			}
+
+			// Remove comments
+			String [] string_parsing = nextLine.split("#");
+
+			// If there are comments, remove the comment part
+			if(string_parsing.length != 0)
+			{
+				String outString = string_parsing[0];
+
+				// Don't add the line if it is just the definition of a global
+				if(outString.contains("global"))
+				{
+					continue;
+				}
+
+				// If there is a part that is not a comment
+				if(outString.length() != 0)
+				{
+					// Generalize Functions
+					outString = outString.replaceAll("[a-zA-Z_0-9]+\\(", "func(");
+
+					// Generalize Globals 
+					outString = outString.replaceAll("g[0-9]+", "g");
+
+					// Generalize Arguments 
+					outString = outString.replaceAll("a[0-9]+", "a");
+
+					// Generalize Struct Vars 
+					outString = outString.replaceAll("e[0-9]+", "e");
+
+					// Generalize Local Vars 
+					outString = outString.replaceAll("v[0-9]+", "v");
+
+					// Remove whitespace
+					outString = outString.replaceAll("\\s", "");
+
+					if(outString.length() != 0)
+					{
+						// Normalization occurs here
+						codeOutput.add(outString);
+					}
+				}
+			}
+		}
+
+		// Close the scanning on the retdec output
+		scan.close();
 
 		// Return the created file
 		return codeOutput;

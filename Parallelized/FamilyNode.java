@@ -17,7 +17,7 @@ class FamilyNode implements Serializable
 	ArrayList<FamilyEdge> edges;
 
 	// Constructor for the family node
-	FamilyNode(String name) throws Exception
+	FamilyNode(String name)
 	{
 		// Set the name for the family
 		this.name = name;
