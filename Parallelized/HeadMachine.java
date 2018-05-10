@@ -198,7 +198,48 @@ public class HeadMachine
 					sender.start();
 				}
 
-				// Output the csv
+				// Check to see if executiong has finished
+				while(true)
+				{
+					// Sleep for a bit
+					TimeUnit.SECONDS.sleep(5);
+
+					// Check if all the sockets are just chillin
+					if(availableSockets.size() == onlineSockets.size())
+					{
+						break;
+					}
+				}
+
+				// Create a printwriter to output with
+				PrintWriter pw = new PrintWriter(new File("test-classifications.csv"));
+
+				// Create a StringBuilder for speed stuff
+				StringBuilder sb = new StringBuilder();
+
+				// Iterate over each family node
+				for(FamilyNode i : graph.nodes)
+				{
+					sb.append(i.name + ",");
+
+					// Iterate over the Sample Nodes
+					for(BinaryNode j : i.binaries)
+					{
+						sb.append(j.name + ",");
+					}
+
+					// New row
+					sb.append("\n");
+				}
+
+				// Write out the string
+				pw.write(sb.toString());
+
+				// Close the printwriter
+				pw.close();
+
+				System.out.println("Finished!");
+				System.exit(0);
 			}
 
 			catch(Exception e)
