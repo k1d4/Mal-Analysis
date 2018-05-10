@@ -9,13 +9,13 @@ import java.util.concurrent.*;
 class Graph implements Serializable
 {
 	// The percentage similarity an edge must be for it to be considered within a family
-	static final double EDGE_SIMILARITY_THRESHOLD = 10;
+	static double EDGE_SIMILARITY_THRESHOLD;
 
 	// The size of the filter used to hash the malware
-	static final int FILTER_SIZE = (int) Math.pow(2, 24);
+	static int FILTER_SIZE;
 
 	// The window size used for the hash
-	static final int WINDOW_SIZE = 16;
+	static int WINDOW_SIZE;
 
 	// Nodes in the graph
 	static ArrayList<FamilyNode> nodes;
@@ -24,8 +24,11 @@ class Graph implements Serializable
 	static ArrayList<BinaryNode> unknown;
 
 	// Constructor for the graph
-	Graph()
+	Graph(double similarity, int filter_size, int window_size)
 	{
+		this.EDGE_SIMILARITY_THRESHOLD = similarity;
+		this.FILTER_SIZE = (int) Math.pow(2, filter_size);
+		this.WINDOW_SIZE = window_size;
 		this.nodes = new ArrayList<FamilyNode>();
 		this.unknown = new ArrayList<BinaryNode>();
 	}

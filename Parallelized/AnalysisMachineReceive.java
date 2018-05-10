@@ -83,7 +83,7 @@ public class AnalysisMachineReceive
         	p.waitFor();
 
         	// Read the output file into an arraylist
-			Scanner scan = new Scanner(new BufferedReader(new FileReader(AnalysisMachine.directory + "/" + inFile.toString() + ".py")));
+			Scanner scan = new Scanner(new BufferedReader(new FileReader(AnalysisMachine.directory + "/" + inFile.toString().substring(0, inFile.toString().lastIndexOf('.')) + ".py")));
 
 			while(scan.hasNext())
 			{

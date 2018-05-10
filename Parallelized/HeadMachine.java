@@ -15,87 +15,197 @@ public class HeadMachine
 	static ArrayList<ObjectOutputStream> availableSockets = new ArrayList<ObjectOutputStream>();
 
 	// The graph that is created to represent our ecosystem.
-	static Graph graph = new Graph();
+	static Graph graph;
 
 	// Just a big 'ole lock...
 	static Semaphore lock = new Semaphore(1);
 
 	public static void main(String [] args)
 	{
-		// Check for the correct arguments
-		if (args.length != 2)
+		if(args.length == 0)
 		{
-			System.out.println("Please input host and port of Analysis Machine 1...");
-			System.exit(0);
-		}
-
-		// Get the host and port
-		String host = args[0];
-		int port = Integer.parseInt(args[1]);
-
-		try
-		{
-			// We need to open N connections with all servers... Ideally leave it open
-			Socket socket = new Socket(InetAddress.getByName(host), port);
-
-			// Fork a listener for that socket
-			HeadMachineListener listener = new HeadMachineListener(socket);
-
-			// Add the analysis machine to the online sockets and available list
-			onlineSockets.add(listener.outputStream);
-
-			// Add the socket to the available sockets
-			availableSockets.add(listener.outputStream);
-
-			// Start the listener
-			listener.start();
-
-			// Scanner used to get input from the user
-			Scanner in = new Scanner(System.in);
-
-			// Continually loop to send input (listener will handle responses)
-			int select = -1;
-
-			while(select != 0)
+			try
 			{
-				// Ask the user for input
-				System.out.println("Select an option:");
-				System.out.println("\t0. Exit");
-				System.out.println("\t1. Add family to graph");
-				System.out.println("\t2. Add unknown binaries");
-				System.out.println("\t3. Print graph");
-				System.out.println("\t4. Output classifications to csv");
-				System.out.println("\t5. Add analysis machine");
+				// Scanner used to get input from the user
+				Scanner in = new Scanner(System.in);
 
-				// Get which option the user wants
-				try
+				// Continually loop to send input (listener will handle responses)
+				int select = -1;
+
+				while(select != 0)
 				{
-					select = in.nextInt();
+					// Ask the user for input
+					System.out.println("Select an option:");
+					System.out.println("\t0. Exit");
+					System.out.println("\t1. Add family to graph");
+					System.out.println("\t2. Add unknown binaries");
+					System.out.println("\t3. Print graph");
+					System.out.println("\t4. Output classifications to csv");
+					System.out.println("\t5. Add analysis machine");
+
+					// Get which option the user wants
+					try
+					{
+						select = in.nextInt();
+					}
+
+					catch(Exception e)
+					{
+						System.out.println("");
+						System.out.println("***** Error! *****");
+						System.out.print("* ");
+						System.out.println("Please input a valid option...");
+						System.out.println("******************");
+						in.nextLine();
+						continue;
+					}
+
+					// Do heavy lifting
+					parseInput(in, select);
 				}
 
-				catch(Exception e)
-				{
-					System.out.println("");
-					System.out.println("***** Error! *****");
-					System.out.print("* ");
-					System.out.println("Please input a valid option...");
-					System.out.println("******************");
-					in.nextLine();
-					continue;
-				}
-
-				// Do heavy lifting
-				parseInput(in, select);
+				// Exit
+				System.exit(0);
 			}
 
-			// Exit
-			System.exit(0);
+			// Print exception if one occurred
+			catch(Exception e)
+			{
+				System.out.println(e);
+			}
 		}
 
-		// Print exception if one occurred
-		catch(Exception e)
+		// Config file has been provided
+		else
 		{
-			System.out.println(e);
+			try
+			{	
+				// Create a scanner on the file
+				Scanner configReader = new Scanner(new File(args[0]));
+
+				// Reading in the config file
+				HashMap<String, String> setup = new HashMap<String, String>();
+				ArrayList<String> families = new ArrayList<String>();
+				ArrayList<String> machines = new ArrayList<String>();
+
+				// Sender thread
+				HeadMachineSender sender;
+
+				// Read in the setup args
+				while(configReader.hasNext())
+				{
+					switch(configReader.nextLine())
+					{
+						case "<Setup>": 
+							while(configReader.hasNext())
+							{
+								String in = configReader.nextLine();
+
+								if(in.equals("</Setup>"))
+								{
+									break;
+								}
+
+								String [] parsing = in.split(":");
+								setup.put(parsing[0], parsing[1]);
+							}
+
+							break;
+						case "<Families>":
+							while(configReader.hasNext())
+							{
+								String in = configReader.nextLine();
+
+								if(in.equals("</Families>"))
+								{
+									break;
+								}
+
+								// Add each of them to the families class
+								families.add(in);
+							}
+
+							break;
+						case "<Machines>":
+							while(configReader.hasNext())
+							{
+								String in = configReader.nextLine();
+
+								if(in.equals("</Machines>"))
+								{
+									break;
+								}
+
+								// Add each of them to the families class
+								machines.add(in);
+							}
+
+							break;
+
+						default: configReader.nextLine();
+					}
+				}
+
+				System.out.println(setup);
+				System.out.println(families);
+				System.out.println(machines);
+
+				// Setup the Graph
+				graph = new Graph(Integer.parseInt(setup.get("EDGE_SIMILARITY_THRESHOLD")), Integer.parseInt(setup.get("WINDOW_SIZE")), Integer.parseInt(setup.get("FILTER_SIZE")));
+				
+				// Setup the Machines
+				for(String machine : machines)
+				{
+					// parse host / port
+					String [] hostPort = machine.split(":");
+
+					try
+					{
+						// We need to open N connections with all servers... Ideally leave it open
+						Socket socket = new Socket(InetAddress.getByName(hostPort[0]), Integer.parseInt(hostPort[1]));
+
+						// Create and start the new listener
+						HeadMachineListener listener = new HeadMachineListener(socket);
+
+						// Acquire the big 'ole lock
+						lock.acquire();
+
+						// Add the analysis machine to the online sockets and available list
+						onlineSockets.add(listener.outputStream);
+						availableSockets.add(listener.outputStream);
+
+						// Release the big 'ole lock
+						lock.release();
+
+						// Start the listener
+						listener.start();
+					}
+
+					// Print exception if one occurred
+					catch(Exception e)
+					{
+						System.out.println(e);
+					}
+				}
+
+				// Start analyzing families
+				for(String family : families)
+				{
+					// Create a sender for that socket
+					sender = new HeadMachineSender(family, family);
+
+					// Start the sender
+					sender.start();
+				}
+
+				// Output the csv
+			}
+
+			catch(Exception e)
+			{
+				System.out.println("Incorrectly formmatted config file...");
+				System.exit(0);
+			}
 		}
 	}
 
