@@ -82,119 +82,130 @@ public class HeadMachine
 		// Config file has been provided
 		else
 		{
+			// Create a scanner on the file
+			Scanner configReader = null;
+
 			try
-			{	
+			{
 				// Create a scanner on the file
-				Scanner configReader = new Scanner(new File(args[0]));
+				configReader = new Scanner(new File(args[0]));
+			}
 
-				// Reading in the config file
-				HashMap<String, String> setup = new HashMap<String, String>();
-				ArrayList<String> families = new ArrayList<String>();
-				ArrayList<String> machines = new ArrayList<String>();
+			catch(Exception e)
+			{
+				System.out.println(e);
+			}
 
-				// Sender thread
-				HeadMachineSender sender;
+			// Reading in the config file
+			HashMap<String, String> setup = new HashMap<String, String>();
+			ArrayList<String> families = new ArrayList<String>();
+			ArrayList<String> machines = new ArrayList<String>();
 
-				// Read in the setup args
-				while(configReader.hasNext())
+			// Sender thread
+			HeadMachineSender sender;
+
+			// Read in the setup args
+			while(configReader.hasNext())
+			{
+				switch(configReader.nextLine())
 				{
-					switch(configReader.nextLine())
-					{
-						case "<Setup>": 
-							while(configReader.hasNext())
+					case "<Setup>": 
+						while(configReader.hasNext())
+						{
+							String in = configReader.nextLine();
+
+							if(in.equals("</Setup>"))
 							{
-								String in = configReader.nextLine();
-
-								if(in.equals("</Setup>"))
-								{
-									break;
-								}
-
-								String [] parsing = in.split(":");
-								setup.put(parsing[0], parsing[1]);
+								break;
 							}
 
-							break;
-						case "<Families>":
-							while(configReader.hasNext())
+							String [] parsing = in.split(":");
+							setup.put(parsing[0], parsing[1]);
+						}
+
+						break;
+					case "<Families>":
+						while(configReader.hasNext())
+						{
+							String in = configReader.nextLine();
+
+							if(in.equals("</Families>"))
 							{
-								String in = configReader.nextLine();
-
-								if(in.equals("</Families>"))
-								{
-									break;
-								}
-
-								// Add each of them to the families class
-								families.add(in);
+								break;
 							}
 
-							break;
-						case "<Machines>":
-							while(configReader.hasNext())
+							// Add each of them to the families class
+							families.add(in);
+						}
+
+						break;
+					case "<Machines>":
+						while(configReader.hasNext())
+						{
+							String in = configReader.nextLine();
+
+							if(in.equals("</Machines>"))
 							{
-								String in = configReader.nextLine();
-
-								if(in.equals("</Machines>"))
-								{
-									break;
-								}
-
-								// Add each of them to the families class
-								machines.add(in);
+								break;
 							}
 
-							break;
+							// Add each of them to the families class
+							machines.add(in);
+						}
 
-						default: configReader.nextLine();
-					}
+						break;
+
+					default: configReader.nextLine();
+				}
+			}
+
+			// Output the inputs
+			System.out.println(setup);
+			System.out.println(families);
+			System.out.println(machines);
+
+			// Setup the Graph
+			graph = new Graph(Integer.parseInt(setup.get("EDGE_SIMILARITY_THRESHOLD")), Integer.parseInt(setup.get("WINDOW_SIZE")));
+			
+			// Setup the Machines
+			for(String machine : machines)
+			{
+				// parse host / port
+				String [] hostPort = machine.split(":");
+
+				try
+				{
+					// We need to open N connections with all servers... Ideally leave it open
+					Socket socket = new Socket(InetAddress.getByName(hostPort[0]), Integer.parseInt(hostPort[1]));
+
+					// Create and start the new listener
+					HeadMachineListener listener = new HeadMachineListener(socket);
+
+					// Acquire the big 'ole lock
+					lock.acquire();
+
+					// Add the analysis machine to the online sockets and available list
+					onlineSockets.add(listener.outputStream);
+					availableSockets.add(listener.outputStream);
+
+					// Release the big 'ole lock
+					lock.release();
+
+					// Start the listener
+					listener.start();
 				}
 
-				// Output the inputs
-				System.out.println(setup);
-				System.out.println(families);
-				System.out.println(machines);
-
-				// Setup the Graph
-				graph = new Graph(Integer.parseInt(setup.get("EDGE_SIMILARITY_THRESHOLD")), Integer.parseInt(setup.get("WINDOW_SIZE")));
-				
-				// Setup the Machines
-				for(String machine : machines)
+				// Print exception if one occurred
+				catch(Exception e)
 				{
-					// parse host / port
-					String [] hostPort = machine.split(":");
-
-					try
-					{
-						// We need to open N connections with all servers... Ideally leave it open
-						Socket socket = new Socket(InetAddress.getByName(hostPort[0]), Integer.parseInt(hostPort[1]));
-
-						// Create and start the new listener
-						HeadMachineListener listener = new HeadMachineListener(socket);
-
-						// Acquire the big 'ole lock
-						lock.acquire();
-
-						// Add the analysis machine to the online sockets and available list
-						onlineSockets.add(listener.outputStream);
-						availableSockets.add(listener.outputStream);
-
-						// Release the big 'ole lock
-						lock.release();
-
-						// Start the listener
-						listener.start();
-					}
-
-					// Print exception if one occurred
-					catch(Exception e)
-					{
-						System.out.println(e);
-					}
+					System.out.println(e);
 				}
+			}
 
-				// Start analyzing families
-				for(String family : families)
+			// Start analyzing families
+			for(String family : families)
+			{
+				try
 				{
 					// Create a sender for that socket
 					sender = new HeadMachineSender(family, family);
@@ -203,69 +214,86 @@ public class HeadMachine
 					sender.start();
 				}
 
-				// Check to see if executiong has finished
-				while(true)
+				catch(Exception e)
+				{
+					System.out.println(e);
+				}
+			}
+
+			// Check to see if executiong has finished
+			while(true)
+			{
+				try
 				{
 					// Sleep for a bit
 					TimeUnit.SECONDS.sleep(3);
-
-					// Check if all the sockets are just chillin
-					if(availableSockets.size() == onlineSockets.size())
-					{
-						break;
-					}
 				}
 
-				// Create a printwriter to output with
-				PrintWriter pw = new PrintWriter(new File(setup.get("OUTPUT")));
-
-				// Create a StringBuilder for speed stuff
-				StringBuilder sb = new StringBuilder();
-
-				// Iterate over each family node
-				for(FamilyNode i : graph.nodes)
+				catch(Exception e)
 				{
-					sb.append(i.name + "\n");
-
-					for(FamilyEdge k : i.edges)
-					{
-						sb.append("," + k.dest.name + "," + k.similarity + "\n");
-					}
-
-					sb.append("\n");
-
-					// Iterate over the Sample Nodes
-					for(BinaryNode j : i.binaries)
-					{
-						sb.append("," + j.name + "\n");
-
-						for(BinaryEdge k : j.edges)
-						{
-							sb.append(",," + k.dest.name + "," + k.similarity + "\n");
-						}
-					}
-
-					// New row
-					sb.append("\n");
+					System.out.println(e);
 				}
 
-				// Write out the string
-				pw.write(sb.toString());
-
-				// Close the printwriter
-				pw.close();
-
-				// Analysis is finished!
-				System.out.println("Finished!");
-				System.exit(0);
+				// Check if all the sockets are just chillin
+				if(availableSockets.size() == onlineSockets.size())
+				{
+					break;
+				}
 			}
 
-			// Incorrectly formatted input
+			// Create a printwriter to output with
+			PrintWriter pw = null;
+
+			try
+			{
+				// Create a printwriter to output with
+				pw = new PrintWriter(new File(setup.get("OUTPUT")));
+			}
+
 			catch(Exception e)
 			{
-				System.out.println("Incorrectly formmatted config file...");
-				System.exit(0);
+				System.out.println(e);
 			}
+
+			// Create a StringBuilder for speed stuff
+			StringBuilder sb = new StringBuilder();
+
+			// Iterate over each family node
+			for(FamilyNode i : graph.nodes)
+			{
+				sb.append(i.name + "\n");
+
+				for(FamilyEdge k : i.edges)
+				{
+					sb.append("," + k.dest.name + "," + k.similarity + "\n");
+				}
+
+				sb.append("\n");
+
+				// Iterate over the Sample Nodes
+				for(BinaryNode j : i.binaries)
+				{
+					sb.append("," + j.name + "\n");
+
+					for(BinaryEdge k : j.edges)
+					{
+						sb.append(",," + k.dest.name + "," + k.similarity + "\n");
+					}
+				}
+
+				// New row
+				sb.append("\n");
+			}
+
+			// Write out the string
+			pw.write(sb.toString());
+
+			// Close the printwriter
+			pw.close();
+
+			// Analysis is finished!
+			System.out.println("Finished!");
+			System.exit(0);
 		}
 	}
 
@@ -624,6 +652,18 @@ class HeadMachineSender extends Thread
 				}
 			}
 
+			try
+			{
+				// Acquire the big 'ole lock
+				HeadMachine.lock.acquire();
+			}
+
+			// Lock acquire failure
+			catch(Exception e)
+			{
+				System.out.println(e);
+			}
+
 			// If the family does not already exist, create a new one
 			if (append == null)
 			{
@@ -633,6 +673,9 @@ class HeadMachineSender extends Thread
 				// Add the family node to the family list
 				HeadMachine.graph.addFamily(append);
 			}
+
+			// Release the big 'ole lock
+			HeadMachine.lock.release();
 
 			// The the family value
 			family = append.name;
