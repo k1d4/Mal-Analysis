@@ -41,11 +41,13 @@ public class HeadMachine
 					// Ask the user for input
 					System.out.println("Select an option:");
 					System.out.println("\t0. Exit");
-					System.out.println("\t1. Add family to graph");
-					System.out.println("\t2. Add unknown binaries");
-					System.out.println("\t3. Print graph");
-					System.out.println("\t4. Output classifications to csv");
-					System.out.println("\t5. Add analysis machine");
+					System.out.println("\t1. Load graph");
+					System.out.println("\t2. Save graph");
+					System.out.println("\t3. Add family to graph");
+					System.out.println("\t4. Add unknown binaries");
+					System.out.println("\t5. Print graph");
+					System.out.println("\t6. Output classifications to csv");
+					System.out.println("\t7. Add analysis machine");
 
 					// Get which option the user wants
 					try
@@ -109,7 +111,7 @@ public class HeadMachine
 			{
 				switch(configReader.nextLine())
 				{
-					case "<Setup>": 
+					case "<Setup>":
 						while(configReader.hasNext())
 						{
 							String in = configReader.nextLine();
@@ -166,7 +168,7 @@ public class HeadMachine
 
 			// Setup the Graph
 			graph = new Graph(Integer.parseInt(setup.get("EDGE_SIMILARITY_THRESHOLD")), Integer.parseInt(setup.get("WINDOW_SIZE")));
-			
+
 			// Setup the Machines
 			for(String machine : machines)
 			{
@@ -318,8 +320,41 @@ public class HeadMachine
 		// Switch on the users selection
 		switch(select)
 		{
-			// Get a malware family from the user
+			// Load saved graph
 			case 1:
+				try
+				{
+					// Get the saved file name from the user
+					System.out.print("Name of saved graph: ");
+					input = in.next();
+					graph = Graph.loadGraph(input);
+				}
+
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+
+				break;
+
+			// Save current graph to the specified filename
+			case 2:
+				try
+				{
+					// Get the saved name file
+					System.out.print("Name of file: ");
+					input = in.next();
+					graph.saveGraph(input, graph);
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+
+				break;
+
+			// Get a malware family from the user
+			case 3:
 
 				// Get the malware family directory
 				System.out.print("Input Directory: ");
@@ -338,7 +373,7 @@ public class HeadMachine
 				break;
 
 			// Add unknown files
-			case 2:
+			case 4:
 
 				System.out.print("Input Binary Path: ");
 				input = in.next();
@@ -352,7 +387,7 @@ public class HeadMachine
 				break;
 
 			// Print out the graph
-			case 3:
+			case 5:
 
 				// Might get a null pointer exception, it's okay! Just fail and try again
 				try
@@ -401,8 +436,9 @@ public class HeadMachine
 
 				break;
 
-			// Print out the graph
-			case 4:
+			// Write graph and its comparisons to csv, in terms of percentage
+			// similarities
+			case 6:
 
 				// Might get a null pointer exception, it's okay! Just fail and try again
 				try
@@ -448,7 +484,8 @@ public class HeadMachine
 
 				break;
 
-			case 5:
+			// Add Analysis Machine to the system
+			case 7:
 				// Get the host and port
 				System.out.print("Input Host: ");
 				String host = in.next();
@@ -579,7 +616,7 @@ class HeadMachineListener extends Thread
 					HeadMachine.lock.release();
 				}
 			}
-    		
+
 		}
 		// Print the exception
 		catch(Exception e)
