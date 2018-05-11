@@ -367,7 +367,7 @@ public class HeadMachine
 				// If a null pointer occurs
 				catch(Exception e)
 				{
-					System.out.println(e);
+					e.printStackTrace();
 					break;
 				}
 
