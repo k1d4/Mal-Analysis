@@ -20,12 +20,13 @@ public class HeadMachine
 	// Just a big 'ole lock...
 	static Semaphore lock = new Semaphore(1);
 
+	// Run the head machine
 	public static void main(String [] args)
 	{
-		if(args.length == 0)
+		if(args.length == 2)
 		{
 			// Make sure to initialize the graph
-			graph = new Graph(10, 28, 16);
+			graph = new Graph(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
 
 			try
 			{
@@ -149,12 +150,13 @@ public class HeadMachine
 					}
 				}
 
+				// Output the inputs
 				System.out.println(setup);
 				System.out.println(families);
 				System.out.println(machines);
 
 				// Setup the Graph
-				graph = new Graph(Integer.parseInt(setup.get("EDGE_SIMILARITY_THRESHOLD")), Integer.parseInt(setup.get("WINDOW_SIZE")), Integer.parseInt(setup.get("FILTER_SIZE")));
+				graph = new Graph(Integer.parseInt(setup.get("EDGE_SIMILARITY_THRESHOLD")), Integer.parseInt(setup.get("WINDOW_SIZE")));
 				
 				// Setup the Machines
 				for(String machine : machines)
@@ -205,7 +207,7 @@ public class HeadMachine
 				while(true)
 				{
 					// Sleep for a bit
-					TimeUnit.SECONDS.sleep(5);
+					TimeUnit.SECONDS.sleep(3);
 
 					// Check if all the sockets are just chillin
 					if(availableSockets.size() == onlineSockets.size())
@@ -215,7 +217,7 @@ public class HeadMachine
 				}
 
 				// Create a printwriter to output with
-				PrintWriter pw = new PrintWriter(new File("test-classifications.csv"));
+				PrintWriter pw = new PrintWriter(new File(setup.get("OUTPUT")));
 
 				// Create a StringBuilder for speed stuff
 				StringBuilder sb = new StringBuilder();
@@ -223,12 +225,24 @@ public class HeadMachine
 				// Iterate over each family node
 				for(FamilyNode i : graph.nodes)
 				{
-					sb.append(i.name + ",");
+					sb.append(i.name + "\n");
+
+					for(FamilyEdge k : i.edges)
+					{
+						sb.append("," + k.dest.name + "," + k.similarity + "\n");
+					}
+
+					sb.append("\n");
 
 					// Iterate over the Sample Nodes
 					for(BinaryNode j : i.binaries)
 					{
-						sb.append(j.name + ",");
+						sb.append("," + j.name + "\n");
+
+						for(BinaryEdge k : j.edges)
+						{
+							sb.append(",," + k.dest.name + "," + k.similarity + "\n");
+						}
 					}
 
 					// New row
@@ -241,10 +255,12 @@ public class HeadMachine
 				// Close the printwriter
 				pw.close();
 
+				// Analysis is finished!
 				System.out.println("Finished!");
 				System.exit(0);
 			}
 
+			// Incorrectly formatted input
 			catch(Exception e)
 			{
 				System.out.println("Incorrectly formmatted config file...");
@@ -363,8 +379,12 @@ public class HeadMachine
 				// Might get a null pointer exception, it's okay! Just fail and try again
 				try
 				{
+					// Get output file from the user
+					System.out.print("Input Binary Path: ");
+					input = in.next();
+
 					// Create a printwriter to output with
-					PrintWriter pw = new PrintWriter(new File("test-classifications.csv"));
+					PrintWriter pw = new PrintWriter(new File(input));
 
 					// Create a StringBuilder for speed stuff
 					StringBuilder sb = new StringBuilder();
@@ -511,11 +531,28 @@ class HeadMachineListener extends Thread
 				else
 				{
 					System.out.println(data);
+
+					try
+					{
+						// Acquire the big 'ole lock
+						HeadMachine.lock.acquire();
+					}
+
+					// Lock acquire failure
+					catch(Exception e)
+					{
+						System.out.println(e);
+					}
+
+					// Free the machine for analysis of anther binary
+					HeadMachine.availableSockets.add(outputStream);
+
+					// Release the big 'ole lock
+					HeadMachine.lock.release();
 				}
 			}
-		}
     		
-
+		}
 		// Print the exception
 		catch(Exception e)
 		{
@@ -594,7 +631,7 @@ class HeadMachineSender extends Thread
 				append = new FamilyNode(family);
 
 				// Add the family node to the family list
-				Graph.addFamily(append);
+				HeadMachine.graph.addFamily(append);
 			}
 
 			// The the family value

@@ -18,7 +18,7 @@ class BinaryNode implements Serializable
 	ArrayList<BinaryEdge> edges;
 
 	// Node constructor for each binary
-	BinaryNode(ArrayList<String> code) throws Exception
+	BinaryNode(ArrayList<String> code, int window_size) throws Exception
 	{
 		// Name of the file
 		this.name = code.get(0);
@@ -27,6 +27,6 @@ class BinaryNode implements Serializable
 		this.code = code;
 
 		// The bitset representation of the decompiled code
-		this.filter = Graph.filter(this.code);
+		this.filter = Graph.filter(this.code, window_size);
 	}
 }

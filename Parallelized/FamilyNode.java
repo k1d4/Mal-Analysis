@@ -23,7 +23,7 @@ class FamilyNode implements Serializable
 		this.name = name;
 
 		// Create a blank filter for the family
-		this.filter = new BitSet(Graph.FILTER_SIZE);
+		this.filter = new BitSet(HeadMachine.graph.filter_size);
 
 		// Edges to the other families
 		edges = new ArrayList<FamilyEdge>();

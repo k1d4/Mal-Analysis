@@ -46,14 +46,14 @@ public class HeadMachineReceive
 			// Check if the family is unknown
 			if(family.equals("unknown"))
 			{
-				test = Graph.familyCheck(node);
+				test = HeadMachine.graph.familyCheck(node);
 			}
 
 			// if the family is not unknown
 			else
 			{
 				// Find the family associated with the name
-				for(FamilyNode famNode : Graph.nodes)
+				for(FamilyNode famNode : HeadMachine.graph.nodes)
 				{
 					// If we have found the correct node
 					if(famNode.name.equals(family))
@@ -68,13 +68,13 @@ public class HeadMachineReceive
 			// If family is still unknown, we have to add the node to the unknown list
 			if(test == null)
 			{
-				Graph.unknown.add(node);
+				HeadMachine.graph.unknown.add(node);
 			}
 
 			// Else add the node to the family
 			else
 			{
-				Graph.familyAddBinary(test, node);
+				HeadMachine.graph.familyAddBinary(test, node);
 			}
 
 			// Release the big 'ole lock

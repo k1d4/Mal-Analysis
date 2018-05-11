@@ -16,7 +16,7 @@ public class AnalysisMachineReceive
 		String [] parts = fileName.split("%");
 
 		// Exit if there is not a filename and a family name
-		if(parts.length != 2)
+		if(parts.length != 3)
 		{
 			AnalysisMachineSend.error(outputStream);
 			return;
@@ -37,16 +37,17 @@ public class AnalysisMachineReceive
 			Files.write(binary.toPath(), data);
 
 			// Run the file through RetDec
-			ArrayList<String> decompiledCode = decompile(new File(name));
+			ArrayList<String> decompiledCode = decompile(new File(name), outputStream);
 
 			// Create a binary node based upon that new file
-			newNode = new BinaryNode(decompiledCode);
+			newNode = new BinaryNode(decompiledCode, Integer.parseInt(parts[2]));
 		}
 
 		// Just in case there was an error
 		catch(Exception e)
 		{
 			System.out.println(e);
+			AnalysisMachineSend.error(outputStream);
 		}
 
 		// Send the node back to the Head Machine
@@ -54,7 +55,7 @@ public class AnalysisMachineReceive
 	}
 
 	// Uses RetDec to deobfuscate a file
-	static ArrayList<String> decompile(File inFile)
+	static ArrayList<String> decompile(File inFile, ObjectOutputStream outputStream)
 	{
 		// Create a new process to run RetDec
 		Process p;
@@ -92,6 +93,7 @@ public class AnalysisMachineReceive
 		catch(Exception e)
 		{
 			System.out.println(e);
+			AnalysisMachineSend.error(outputStream);
 		}
 
 		while(scan.hasNext())

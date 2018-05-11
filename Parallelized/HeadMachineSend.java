@@ -23,7 +23,7 @@ public abstract class HeadMachineSend
 			String fileName = binary.toString().substring(binary.toString().lastIndexOf("/") + 1);
 
 			// Send the file name and family name
-			outputStream.writeObject(fileName + "%" + family);
+			outputStream.writeObject(fileName + "%" + family + "%" + HeadMachine.graph.window_size);
 			outputStream.flush();
 		}
 

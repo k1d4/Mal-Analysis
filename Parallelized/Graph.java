@@ -9,32 +9,31 @@ import java.util.concurrent.*;
 class Graph implements Serializable
 {
 	// The percentage similarity an edge must be for it to be considered within a family
-	static double EDGE_SIMILARITY_THRESHOLD;
+	double similarity;
 
 	// The size of the filter used to hash the malware
-	static int FILTER_SIZE;
+	int filter_size = (int) Math.pow(2, 20);
 
 	// The window size used for the hash
-	static int WINDOW_SIZE;
+	int window_size;
 
 	// Nodes in the graph
-	static ArrayList<FamilyNode> nodes;
+	ArrayList<FamilyNode> nodes;
 
 	// Unknown nodes in the graph
-	static ArrayList<BinaryNode> unknown;
+	ArrayList<BinaryNode> unknown;
 
 	// Constructor for the graph
-	Graph(double similarity, int filter_size, int window_size)
+	Graph(double similarity, int window_size)
 	{
-		this.EDGE_SIMILARITY_THRESHOLD = similarity;
-		this.FILTER_SIZE = (int) Math.pow(2, filter_size);
-		this.WINDOW_SIZE = window_size;
 		this.nodes = new ArrayList<FamilyNode>();
 		this.unknown = new ArrayList<BinaryNode>();
+		this.similarity = similarity;
+		this.window_size = window_size;
 	}
 
 	// Create a filter for the node
-	static BitSet filter(ArrayList<String> code) throws Exception
+	static BitSet filter(ArrayList<String> code, int window_size) throws Exception
 	{
 		// This will contain the n-grams from the doc
 		ArrayList<String> grams = new ArrayList<String>();
@@ -43,22 +42,23 @@ class Graph implements Serializable
 		for(int i = 0; i < code.size(); i++)
 		{
 			// Check if we are at the end of the file
-			if(i + WINDOW_SIZE >= code.size()) break;
+			if(i + window_size >= code.size()) break;
 
 			// Initialize n-gram as empty string
 			String gram = "";
 
 			// Create grams
-			for(int k = 0; k < WINDOW_SIZE; k++) gram += code.get(i + k);
+			for(int k = 0; k < window_size; k++)
+			{
+				gram += code.get(i + k);
+			} 
 
 			// Add gram to list
 			grams.add(gram);
 		}
 
-		System.out.println(grams.size());
-
 		// Initialize a binary array, size of 2^28
-		BitSet filter = new BitSet(FILTER_SIZE);
+		BitSet filter = new BitSet(window_size);
 
 		// Store to byte array
 		byte[] bytesOfMessage;
@@ -85,18 +85,12 @@ class Graph implements Serializable
 			// Wraps a byte array into a buffer.
 			int index = ByteBuffer.wrap(trunc).getInt();
 
-			// Truncate to 24 bit value
-			index = index & 0x0FFFFFFF;
-
-			System.out.println(i);
-
-			System.out.println(index);
+			// Truncate to 20 bit value
+			index = index & 0x000FFFFF;
 
 			// Set index in filter
 			filter.set(index);
 		}
-
-		System.out.println(filter.cardinality());
 
 		return filter;
 	}
@@ -116,14 +110,14 @@ class Graph implements Serializable
 		// Get the size of the intersection
 		double numerator = intersection.cardinality();
 
-		System.out.println(denominator + ": D + " + numerator + " : N");
+		System.out.println(numerator + "/" + denominator);
 
 		// Return the percentage
 		return (denominator != 0) ? (numerator / denominator * 100.0) : 0;
 	}
 
 	// Create binary edges for a family
-	static ArrayList<BinaryEdge> binaryEdges(BinaryNode source, FamilyNode family)
+	ArrayList<BinaryEdge> binaryEdges(BinaryNode source, FamilyNode family)
 	{
 		// Create new arraylist
 		ArrayList<BinaryEdge> edges = new ArrayList<BinaryEdge>();
@@ -154,13 +148,13 @@ class Graph implements Serializable
 	}
 
 	// Do a comparision against each composite from each family, check the threshold
-	static FamilyNode familyCheck(BinaryNode node) throws Exception
+	FamilyNode familyCheck(BinaryNode node) throws Exception
 	{
 		// Iterate over each of the existing families
 		for(FamilyNode family : nodes)
 		{
 			// Compare the binary to the family node
-			if(filterCompare(node.filter, family.filter) >= EDGE_SIMILARITY_THRESHOLD)
+			if(filterCompare(node.filter, family.filter) >= similarity)
 			{
 				// Family has been found!
 				return family;
@@ -172,7 +166,7 @@ class Graph implements Serializable
 	}
 
 	// Add a binary to a family
-	static void familyAddBinary(FamilyNode family, BinaryNode node)
+	void familyAddBinary(FamilyNode family, BinaryNode node)
 	{
 		// Add the Binary to the family filter
 		family.filter.or(node.filter);
@@ -201,7 +195,7 @@ class Graph implements Serializable
 	}
 
 	// Add the family to the graph
-	static void addFamily(FamilyNode family)
+	void addFamily(FamilyNode family)
 	{
 		// Create an edge for each family
 		for(FamilyNode node : nodes)
@@ -218,7 +212,7 @@ class Graph implements Serializable
 		nodes.add(family);
 	}
 
-	static void updateFamilyEdges(FamilyNode family)
+	void updateFamilyEdges(FamilyNode family)
 	{
 		// Iterate over families edges, update the similarity scores
 		for(FamilyEdge edge : family.edges)
