@@ -77,6 +77,8 @@ Outputs the graph classifications, with percentage similarities between families
 
 This adds an Analysis Machine by specifying the IP address and port number that it was initialized under. For example, if you run an Analysis Machine on the client machine under port 9000, you can connect the client by using `localhost` as the IP and `9000` as the port.
 
+---
+
 ### Running the Single Processor Implementation
 
 Compile all the Java files by running `javac *.java` within the `SingleMachine` directory. To enter the interactive analysis menu, run `java Analysis`.
