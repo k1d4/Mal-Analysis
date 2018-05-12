@@ -8,11 +8,13 @@ CS 262 Final Project: Chris Morris and Bryan Brzycki
 
 ## To Run Malware Tool
 
-We offer two versions of the malware classification tool, a parallel implementation (`Parallelized`) and a single machine implementation (`SingleMachine`, the former version of the tool) .
+We offer two versions of the malware classification tool, a parallel implementation (`Parallelized`) and a single machine implementation (`SingleMachine`, the former version of the tool).
 
 ### Running the Parallel Implementation
 
-To run the parallelized malware tool, you must initialize both the Head (Client) Machine and the Analysis Machines. Download a copy of the full project onto each machine. On each machine, compile all the requisite Java files by running `javac *.java` within the `Parallelized` directory.
+To run the parallelized malware tool, you must initialize both the Head (Client) Machine and the Analysis Machines. Download a copy of the full project onto each machine. [Retargetable Decompiler (RetDec)](https://retdec.com) must also be installed on each Analysis Machine.
+
+On each machine, compile all the requisite Java files by running `javac *.java` within the `Parallelized` directory.
 
 On each Analysis Machine, run `java AnalysisMachine [port]`, where `[port]` is the port number to establish a connection.
 
