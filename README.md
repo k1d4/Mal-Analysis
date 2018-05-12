@@ -14,7 +14,7 @@ We offer two versions of the malware classification tool, a parallel implementat
 
 To run the parallelized malware tool, you must initialize both the Head (Client) Machine and the Analysis Machines. Download a copy of the full project onto each machine. [Retargetable Decompiler (RetDec)](https://retdec.com) must also be installed on each Analysis Machine.
 
-On each machine, compile all the requisite Java files by running `javac *.java` within the `Parallelized` directory.
+On each machine (including the client), compile all the requisite Java files by running `javac *.java` within the `Parallelized` directory.
 
 On each Analysis Machine, run `java AnalysisMachine [port]`, where `[port]` is the port number to establish a connection.
 
